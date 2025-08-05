@@ -127,7 +127,7 @@ fun HomeScreen(
         topBar = {
             CommonAppBar(
                 title = "MyIMDB Movies",
-                showRefreshButton = true,
+                showRefreshButton = false,
                 showFilterButton = true,
                 showSearchButton = true,
                 showWishlistButton = true,
