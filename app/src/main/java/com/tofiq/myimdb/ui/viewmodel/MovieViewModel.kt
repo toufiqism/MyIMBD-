@@ -32,6 +32,10 @@ class MovieViewModel @Inject constructor(
     private val _allMovies = MutableStateFlow<List<MovieResponse.Movie?>>(emptyList())
     private val _currentPage = MutableStateFlow(0)
     private val _selectedMovie = MutableStateFlow<MovieResponse.Movie?>(null)
+    private val _selectedGenre = MutableStateFlow<String?>(null)
+    val selectedGenre: StateFlow<String?> = _selectedGenre.asStateFlow()
+    private val _availableGenres = MutableStateFlow<List<String>>(emptyList())
+    val availableGenres: StateFlow<List<String>> = _availableGenres.asStateFlow()
     private val pageSize = 10
 
     init {
@@ -49,6 +53,7 @@ class MovieViewModel @Inject constructor(
                 is Resource.Success -> {
                     result.data?.movies?.let { movies ->
                         _allMovies.value = movies
+                        updateAvailableGenres()
                         loadNextPage()
                     }
                 }
@@ -74,6 +79,7 @@ class MovieViewModel @Inject constructor(
                 is Resource.Success -> {
                     result.data?.movies?.let { movies ->
                         _allMovies.value = movies
+                        updateAvailableGenres()
                         loadNextPage()
                     }
                 }
@@ -89,16 +95,27 @@ class MovieViewModel @Inject constructor(
         if (_isLoadingMore.value) return
         
         val allMovies = _allMovies.value
+        val selectedGenre = _selectedGenre.value
+        
+        // Filter movies by selected genre
+        val filteredMovies = if (selectedGenre != null) {
+            allMovies.filterNotNull().filter { movie ->
+                movie.genres?.contains(selectedGenre) == true
+            }
+        } else {
+            allMovies.filterNotNull()
+        }
+        
         val currentPage = _currentPage.value
         val startIndex = currentPage * pageSize
         
-        if (startIndex >= allMovies.size) return // No more movies to load
+        if (startIndex >= filteredMovies.size) return // No more movies to load
         
         viewModelScope.launch {
             _isLoadingMore.value = true
             
-            val endIndex = minOf(startIndex + pageSize, allMovies.size)
-            val newMovies = allMovies.subList(startIndex, endIndex)
+            val endIndex = minOf(startIndex + pageSize, filteredMovies.size)
+            val newMovies = filteredMovies.subList(startIndex, endIndex)
             
             _displayedMovies.value = _displayedMovies.value + newMovies
             _currentPage.value = currentPage + 1
@@ -109,9 +126,20 @@ class MovieViewModel @Inject constructor(
     
     fun hasMoreMovies(): Boolean {
         val allMovies = _allMovies.value
+        val selectedGenre = _selectedGenre.value
+        
+        // Filter movies by selected genre
+        val filteredMovies = if (selectedGenre != null) {
+            allMovies.filterNotNull().filter { movie ->
+                movie.genres?.contains(selectedGenre) == true
+            }
+        } else {
+            allMovies.filterNotNull()
+        }
+        
         val currentPage = _currentPage.value
         val startIndex = currentPage * pageSize
-        return startIndex < allMovies.size
+        return startIndex < filteredMovies.size
     }
     
     fun getMovieById(movieId: Int): MovieResponse.Movie? {
@@ -124,5 +152,23 @@ class MovieViewModel @Inject constructor(
     
     fun getSelectedMovie(): MovieResponse.Movie? {
         return _selectedMovie.value
+    }
+    
+    fun setSelectedGenre(genre: String?) {
+        _selectedGenre.value = genre
+        _currentPage.value = 0
+        _displayedMovies.value = emptyList()
+        loadNextPage()
+    }
+    
+
+    
+    private fun updateAvailableGenres() {
+        val genres = _allMovies.value
+            .filterNotNull()
+            .flatMap { movie -> movie.genres?.filterNotNull() ?: emptyList() }
+            .distinct()
+            .sorted()
+        _availableGenres.value = genres
     }
 } 

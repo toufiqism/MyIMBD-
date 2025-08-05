@@ -25,6 +25,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -53,6 +54,7 @@ import coil.request.ImageRequest
 import com.tofiq.myimdb.ui.viewmodel.MovieViewModel
 import com.tofiq.myimdb.util.Resource
 import com.tofiq.myimdb.ui.components.CommonAppBar
+import com.tofiq.myimdb.ui.components.FilterDropdown
 
 @Composable
 fun EmptyState(
@@ -107,37 +109,111 @@ fun HomeScreen(
     val isLoading by movieViewModel.isLoading.collectAsState()
     val displayedMovies by movieViewModel.displayedMovies.collectAsState()
     val isLoadingMore by movieViewModel.isLoadingMore.collectAsState()
+    val selectedGenre by movieViewModel.selectedGenre.collectAsState()
+    val availableGenres by movieViewModel.availableGenres.collectAsState()
+
+    var showFilterDropdown by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             CommonAppBar(
                 title = "MyIMDB Movies",
                 showRefreshButton = true,
+                showFilterButton = true,
                 onRefreshClick = { movieViewModel.refreshMovies() },
+                onFilterClick = { showFilterDropdown = true },
                 isLoading = isLoading
             )
         }
     ) { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            when (movieState) {
-                is Resource.Loading -> {
-                    if (isLoading) {
-                        // Show loading indicator
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
+            // Filter indicator
+            if (selectedGenre != null) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Filtered by: $selectedGenre",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        TextButton(
+                            onClick = { movieViewModel.setSelectedGenre(null) }
                         ) {
-                            CircularProgressIndicator()
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text("Loading movies...")
+                            Text(
+                                text = "Clear",
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
                         }
-                    } else {
-                        // Show cached data while refreshing
+                    }
+                }
+            }
+
+            // Movie content
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f)
+            ) {
+                // Filter Dropdown
+                if (showFilterDropdown) {
+                    FilterDropdown(
+                        genres = availableGenres,
+                        selectedGenre = selectedGenre,
+                        onGenreSelected = { genre ->
+                            movieViewModel.setSelectedGenre(genre)
+                        },
+                        onDismiss = {
+                            showFilterDropdown = false
+                        }
+                    )
+                }
+
+                when (movieState) {
+                    is Resource.Loading -> {
+                        if (isLoading) {
+                            // Show loading indicator
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                CircularProgressIndicator()
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text("Loading movies...")
+                            }
+                        } else {
+                            // Show cached data while refreshing
+                            if (displayedMovies.isNotEmpty()) {
+                                MovieList(
+                                    movies = displayedMovies,
+                                    onRefresh = { movieViewModel.refreshMovies() },
+                                    onLoadMore = { movieViewModel.loadNextPage() },
+                                    isLoadingMore = isLoadingMore,
+                                    hasMoreMovies = movieViewModel.hasMoreMovies(),
+                                    onMovieClick = onMovieClick
+                                )
+                            }
+                        }
+                    }
+
+                    is Resource.Success -> {
                         if (displayedMovies.isNotEmpty()) {
                             MovieList(
                                 movies = displayedMovies,
@@ -147,34 +223,112 @@ fun HomeScreen(
                                 hasMoreMovies = movieViewModel.hasMoreMovies(),
                                 onMovieClick = onMovieClick
                             )
+                        } else {
+                            EmptyState(
+                                message = "No movies found",
+                                onRefresh = { movieViewModel.refreshMovies() }
+                            )
                         }
                     }
-                }
 
-                is Resource.Success -> {
-                    if (displayedMovies.isNotEmpty()) {
-                        MovieList(
-                            movies = displayedMovies,
-                            onRefresh = { movieViewModel.refreshMovies() },
-                            onLoadMore = { movieViewModel.loadNextPage() },
-                            isLoadingMore = isLoadingMore,
-                            hasMoreMovies = movieViewModel.hasMoreMovies(),
-                            onMovieClick = onMovieClick
-                        )
-                    } else {
-                        EmptyState(
-                            message = "No movies found",
-                            onRefresh = { movieViewModel.refreshMovies() }
+                    is Resource.Error -> {
+                        ErrorState(
+                            error = movieState.message ?: "Unknown error occurred",
+                            onRetry = { movieViewModel.refreshMovies() }
                         )
                     }
                 }
-
-                is Resource.Error -> {
-                    ErrorState(
-                        error = movieState.message ?: "Unknown error occurred",
-                        onRetry = { movieViewModel.refreshMovies() }
-                    )
+            }
+        }
+    }
+    
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MovieCard(
+    movie: com.tofiq.myimdb.data.model.domain.MovieResponse.Movie,
+    onMovieClick: (com.tofiq.myimdb.data.model.domain.MovieResponse.Movie) -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onMovieClick(movie) },
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            // Poster Image with Placeholder
+            SubcomposeAsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(movie.posterUrl)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = "Poster for ${movie.title}",
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(MaterialTheme.shapes.small),
+                contentScale = ContentScale.Fit,
+                loading = {
+                    // Loading placeholder
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp
+                        )
+                    }
+                },
+                error = {
+                    // Error placeholder with movie icon
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Movie,
+                            contentDescription = "Movie placeholder",
+                            modifier = Modifier.size(32.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Movie Details (Simplified)
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = movie.title ?: "Unknown Title",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 2
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Year: ${movie.year ?: "Unknown"}",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Genre: ${movie.genres?.joinToString(", ") ?: "Unknown"}",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1
+                )
             }
         }
     }
@@ -254,97 +408,6 @@ fun MovieList(
                     )
                 }
             }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MovieCard(
-    movie: com.tofiq.myimdb.data.model.domain.MovieResponse.Movie,
-    onMovieClick: (com.tofiq.myimdb.data.model.domain.MovieResponse.Movie) -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onMovieClick(movie) },
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.Top
-        ) {
-            // Poster Image with Placeholder
-            SubcomposeAsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(movie.posterUrl)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = "Poster for ${movie.title}",
-                modifier = Modifier
-                    .size(80.dp)
-                    .clip(MaterialTheme.shapes.small),
-                contentScale = ContentScale.Fit,
-                loading = {
-                    // Loading placeholder
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.surfaceVariant),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                            strokeWidth = 2.dp
-                        )
-                    }
-                },
-                error = {
-                    // Error placeholder with movie icon
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.surfaceVariant),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Movie,
-                            contentDescription = "Movie placeholder",
-                            modifier = Modifier.size(32.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            )
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-                            // Movie Details (Simplified)
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = movie.title ?: "Unknown Title",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 2
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Year: ${movie.year ?: "Unknown"}",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "Genre: ${movie.genres?.joinToString(", ") ?: "Unknown"}",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1
-                    )
-                }
         }
     }
 }

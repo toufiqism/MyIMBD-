@@ -167,6 +167,18 @@ The app features a beautiful, animated details screen with the following charact
 - **Loading States**: Proper loading indicators for image loading
 - **Error Handling**: Graceful fallback for missing images
 
+### Genre Filtering System
+
+The app features a comprehensive genre filtering system:
+
+- **Dynamic Genre Extraction**: Automatically extracts all unique genres from the movie database
+- **Filter Dropdown**: Beautiful Material Design dialog with all available genres
+- **Active Filter Indicator**: Shows currently selected genre with clear filter option
+- **Filter Persistence**: Maintains selected filter during pagination and refresh operations
+- **Real-time Filtering**: Instantly filters movies based on selected genre
+- **Clear Filter Option**: Easy way to remove filter and show all movies
+- **Responsive Design**: Filter dropdown adapts to different screen sizes
+
 ### Performance Optimization
 
 The app is optimized for performance with the following characteristics:
@@ -271,6 +283,11 @@ Key dependencies used:
 ## Recent Updates
 
 ### Movie List Screen Enhancement (Latest)
+- **Genre Filtering**: Filter dropdown in app bar with all available genres from the movie database
+- **Filter UI**: Beautiful dialog-based filter dropdown with Material Design styling
+- **Active Filter Indicator**: Shows currently selected genre with clear filter option
+- **Dynamic Genre List**: Automatically extracts and displays all unique genres from loaded movies
+- **Filter Persistence**: Maintains selected filter during pagination and refresh operations
 - **Common App Bar**: Consistent app bar design across all screens with unified navigation
 - **Simplified List View**: Clean, minimal movie cards showing only essential information (title, year, genre)
 - **Movie Details Screen**: Beautiful, animated details page with full movie information
