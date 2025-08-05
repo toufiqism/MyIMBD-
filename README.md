@@ -194,7 +194,9 @@ Key dependencies used:
 
 ### Home Screen
 - Material Design 3 components
-- Card-based movie display
+- Enhanced card-based movie display with poster images
+- Horizontal layout showing movie poster, title, year, genre, director, and plot
+- Image loading with Coil library for smooth poster display
 - Refresh button in app bar
 - Responsive layout for different screen sizes
 - Pull-to-refresh functionality
@@ -207,12 +209,22 @@ Key dependencies used:
 - Optimized database queries
 - Background data refresh
 
+## Recent Updates
+
+### Movie List Screen Enhancement (Latest)
+- **Poster Image Display**: Added movie poster images using Coil library for smooth loading
+- **Placeholder Images**: Shows a movie icon placeholder when poster images are unavailable or fail to load
+- **Loading States**: Displays a loading indicator while images are being fetched
+- **Improved Layout**: Changed from vertical to horizontal card layout for better visual appeal
+- **Enhanced Information Display**: Shows title, year, genre, director, and plot in a compact format
+- **Better Typography**: Improved text hierarchy with proper font sizes and colors
+- **Responsive Design**: Optimized for different screen sizes with proper spacing and text wrapping
+
 ## Future Enhancements
 
 Potential improvements for the app:
 - Search functionality with local database queries
 - Movie details screen with full information
-- Image loading with Coil for movie posters
 - Pagination for large datasets
 - Unit tests for ViewModels and Repository
 - UI tests for Compose screens
