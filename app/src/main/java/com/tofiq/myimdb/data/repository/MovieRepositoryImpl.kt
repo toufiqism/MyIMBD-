@@ -2,7 +2,9 @@ package com.tofiq.myimdb.data.repository
 
 import com.google.gson.Gson
 import com.tofiq.myimdb.data.local.dao.MovieEntityDAO
+import com.tofiq.myimdb.data.local.dao.WishlistEntityDAO
 import com.tofiq.myimdb.data.local.entity.MovieEntity
+import com.tofiq.myimdb.data.local.entity.WishlistEntity
 import com.tofiq.myimdb.data.model.domain.MovieResponse
 import com.tofiq.myimdb.data.remote.MovieApiService
 import com.tofiq.myimdb.util.Resource
@@ -14,7 +16,8 @@ import javax.inject.Inject
 
 class MovieRepositoryImpl @Inject constructor(
     private val apiService: MovieApiService,
-    private val movieDao: MovieEntityDAO
+    private val movieDao: MovieEntityDAO,
+    private val wishlistDao: WishlistEntityDAO
 ) : MovieRepository {
     
     override suspend fun getMovies(): Resource<MovieResponse> {
@@ -71,6 +74,71 @@ class MovieRepositoryImpl @Inject constructor(
             Resource.Error("Network error: ${e.message}")
         } catch (e: Exception) {
             Resource.Error("Unexpected error: ${e.message}")
+        }
+    }
+
+    // Wishlist operations
+    override suspend fun getWishlistMovies(): List<MovieResponse.Movie> {
+        return try {
+            val wishlistEntities = wishlistDao.getAllWishlistMovies()
+            wishlistEntities.map { entity ->
+                MovieResponse.Movie(
+                    id = entity.movieId,
+                    title = entity.title,
+                    year = entity.year,
+                    posterUrl = entity.posterUrl,
+                    plot = entity.plot,
+                    director = entity.director,
+                    actors = entity.actors,
+                    genres = entity.genres?.split(",")?.filter { it.isNotEmpty() },
+                    runtime = entity.runtime
+                )
+            }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    override suspend fun addToWishlist(movie: MovieResponse.Movie) {
+        try {
+            val wishlistEntity = WishlistEntity(
+                movieId = movie.id ?: return,
+                title = movie.title,
+                year = movie.year,
+                posterUrl = movie.posterUrl,
+                plot = movie.plot,
+                director = movie.director,
+                actors = movie.actors,
+                genres = movie.genres?.joinToString(","),
+                runtime = movie.runtime
+            )
+            wishlistDao.insertWishlistMovie(wishlistEntity)
+        } catch (e: Exception) {
+            // Handle error silently or log it
+        }
+    }
+
+    override suspend fun removeFromWishlist(movieId: Int) {
+        try {
+            wishlistDao.deleteWishlistMovieById(movieId)
+        } catch (e: Exception) {
+            // Handle error silently or log it
+        }
+    }
+
+    override suspend fun isMovieInWishlist(movieId: Int): Boolean {
+        return try {
+            wishlistDao.isMovieInWishlist(movieId)
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override suspend fun getWishlistCount(): Int {
+        return try {
+            wishlistDao.getWishlistCount()
+        } catch (e: Exception) {
+            0
         }
     }
 }

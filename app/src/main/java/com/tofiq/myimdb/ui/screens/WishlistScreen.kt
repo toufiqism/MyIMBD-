@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -33,13 +34,9 @@ fun WishlistScreen(
     onBackClick: () -> Unit,
     onMovieClick: (MovieResponse.Movie) -> Unit
 ) {
-    val wishlistMovies by movieViewModel.wishlistMovies.collectAsState()
-    val allMovies by movieViewModel.displayedMovies.collectAsState()
     val wishlistCount by movieViewModel.wishlistCount.collectAsState()
-    
-    val wishlistedMovies = allMovies.filterNotNull().filter { movie ->
-        movie.id != null && wishlistMovies.contains(movie.id)
-    }
+    val isWishlistLoading by movieViewModel.isWishlistLoading.collectAsState()
+    val wishlistMovies by movieViewModel.wishlistMovieList.collectAsState()
 
     Scaffold(
         topBar = {
@@ -50,7 +47,7 @@ fun WishlistScreen(
             )
         }
     ) { paddingValues ->
-        if (wishlistedMovies.isEmpty()) {
+        if (wishlistMovies.isEmpty()) {
             // Empty wishlist state
             Box(
                 modifier = Modifier
@@ -96,7 +93,7 @@ fun WishlistScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(
-                    items = wishlistedMovies,
+                    items = wishlistMovies,
                     key = { movie -> movie.id ?: movie.hashCode() }
                 ) { movie ->
                     WishlistMovieCard(

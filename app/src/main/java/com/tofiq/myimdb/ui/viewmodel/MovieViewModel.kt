@@ -46,6 +46,8 @@ class MovieViewModel @Inject constructor(
     // Wishlist functionality
     private val _wishlistMovies = MutableStateFlow<Set<Int>>(emptySet())
     val wishlistMovies: StateFlow<Set<Int>> = _wishlistMovies.asStateFlow()
+    private val _wishlistMovieList = MutableStateFlow<List<MovieResponse.Movie>>(emptyList())
+    val wishlistMovieList: StateFlow<List<MovieResponse.Movie>> = _wishlistMovieList.asStateFlow()
     private val _wishlistCount = MutableStateFlow(0)
     val wishlistCount: StateFlow<Int> = _wishlistCount.asStateFlow()
     private val _isWishlistLoading = MutableStateFlow(false)
@@ -59,6 +61,21 @@ class MovieViewModel @Inject constructor(
 
     init {
         loadMovies()
+        loadWishlistData()
+    }
+
+    private fun loadWishlistData() {
+        viewModelScope.launch {
+            try {
+                val wishlistMovies = movieRepository.getWishlistMovies()
+                val wishlistIds = wishlistMovies.mapNotNull { it.id }.toSet()
+                _wishlistMovies.value = wishlistIds
+                _wishlistMovieList.value = wishlistMovies
+                _wishlistCount.value = wishlistIds.size
+            } catch (e: Exception) {
+                // Handle error silently
+            }
+        }
     }
 
     fun loadMovies() {
@@ -226,19 +243,33 @@ class MovieViewModel @Inject constructor(
         viewModelScope.launch {
             _isWishlistLoading.value = true
             
-            // Simulate network delay for wishlist operation
-            kotlinx.coroutines.delay(800)
-            
-            val currentWishlist = _wishlistMovies.value.toMutableSet()
-            if (currentWishlist.contains(movieId)) {
-                currentWishlist.remove(movieId)
-            } else {
-                currentWishlist.add(movieId)
+            try {
+                val movie = getMovieById(movieId)
+                if (movie != null) {
+                    val isInWishlist = movieRepository.isMovieInWishlist(movieId)
+                    
+                    if (isInWishlist) {
+                        // Remove from wishlist
+                        movieRepository.removeFromWishlist(movieId)
+                        val currentWishlist = _wishlistMovies.value.toMutableSet()
+                        currentWishlist.remove(movieId)
+                        _wishlistMovies.value = currentWishlist
+                    } else {
+                        // Add to wishlist
+                        movieRepository.addToWishlist(movie)
+                        val currentWishlist = _wishlistMovies.value.toMutableSet()
+                        currentWishlist.add(movieId)
+                        _wishlistMovies.value = currentWishlist
+                    }
+                    
+                    // Refresh wishlist data
+                    loadWishlistData()
+                }
+            } catch (e: Exception) {
+                // Handle error silently or show a message
+            } finally {
+                _isWishlistLoading.value = false
             }
-            _wishlistMovies.value = currentWishlist
-            _wishlistCount.value = currentWishlist.size
-            
-            _isWishlistLoading.value = false
         }
     }
     
@@ -247,9 +278,7 @@ class MovieViewModel @Inject constructor(
     }
     
     fun getWishlistMovies(): List<MovieResponse.Movie> {
-        return _allMovies.value.filterNotNull().filter { movie ->
-            movie.id != null && _wishlistMovies.value.contains(movie.id)
-        }
+        return _wishlistMovieList.value
     }
     
     // Grid/List view functionality

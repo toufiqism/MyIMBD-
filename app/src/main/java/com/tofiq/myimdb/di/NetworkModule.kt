@@ -3,6 +3,7 @@ package com.tofiq.myimdb.di
 import android.content.Context
 import com.tofiq.myimdb.data.local.MovieDB
 import com.tofiq.myimdb.data.local.dao.MovieEntityDAO
+import com.tofiq.myimdb.data.local.dao.WishlistEntityDAO
 import com.tofiq.myimdb.data.remote.MovieApiService
 import com.tofiq.myimdb.data.repository.MovieRepository
 import com.tofiq.myimdb.data.repository.MovieRepositoryImpl
@@ -63,7 +64,17 @@ object NetworkModule {
     
     @Provides
     @Singleton
-    fun provideMovieRepository(apiService: MovieApiService, movieDao: MovieEntityDAO): MovieRepository {
-        return MovieRepositoryImpl(apiService, movieDao)
+    fun provideWishlistDao(database: MovieDB): WishlistEntityDAO {
+        return database.wishlistDao()
+    }
+    
+    @Provides
+    @Singleton
+    fun provideMovieRepository(
+        apiService: MovieApiService, 
+        movieDao: MovieEntityDAO,
+        wishlistDao: WishlistEntityDAO
+    ): MovieRepository {
+        return MovieRepositoryImpl(apiService, movieDao, wishlistDao)
     }
 } 

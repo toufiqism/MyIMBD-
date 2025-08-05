@@ -28,6 +28,8 @@ import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -259,15 +261,16 @@ fun HomeScreen(
                         } else {
                             // Show cached data while refreshing
                             if (displayedMovies.isNotEmpty()) {
-                                MovieList(
-                                    movies = displayedMovies,
-                                    onRefresh = { movieViewModel.refreshMovies() },
-                                    onLoadMore = { movieViewModel.loadNextPage() },
-                                    isLoadingMore = isLoadingMore,
-                                    hasMoreMovies = movieViewModel.hasMoreMovies(),
-                                    isGridView = isGridView,
-                                    onMovieClick = onMovieClick
-                                )
+                                                        MovieList(
+                            movies = displayedMovies,
+                            onRefresh = { movieViewModel.refreshMovies() },
+                            onLoadMore = { movieViewModel.loadNextPage() },
+                            isLoadingMore = isLoadingMore,
+                            hasMoreMovies = movieViewModel.hasMoreMovies(),
+                            isGridView = isGridView,
+                            onMovieClick = onMovieClick,
+                            movieViewModel = movieViewModel
+                        )
                             }
                         }
                     }
@@ -281,7 +284,8 @@ fun HomeScreen(
                                 isLoadingMore = isLoadingMore,
                                 hasMoreMovies = movieViewModel.hasMoreMovies(),
                                 isGridView = isGridView,
-                                onMovieClick = onMovieClick
+                                onMovieClick = onMovieClick,
+                                movieViewModel = movieViewModel
                             )
                         } else {
                             EmptyState(
@@ -307,7 +311,9 @@ fun HomeScreen(
 @Composable
 fun MovieCard(
     movie: com.tofiq.myimdb.data.model.domain.MovieResponse.Movie,
-    onMovieClick: (com.tofiq.myimdb.data.model.domain.MovieResponse.Movie) -> Unit
+    onMovieClick: (com.tofiq.myimdb.data.model.domain.MovieResponse.Movie) -> Unit,
+    isInWishlist: Boolean = false,
+    onWishlistToggle: (() -> Unit)? = null
 ) {
     Card(
         modifier = Modifier
@@ -479,15 +485,36 @@ fun MovieCard(
                 }
             }
             
-            // Arrow indicator
-            Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "View details",
-                modifier = Modifier
-                    .size(20.dp)
-                    .rotate(180f),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            // Wishlist and arrow indicators
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Wishlist button
+                if (onWishlistToggle != null) {
+                    IconButton(
+                        onClick = onWishlistToggle,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isInWishlist) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = if (isInWishlist) "Remove from wishlist" else "Add to wishlist",
+                            modifier = Modifier.size(20.dp),
+                            tint = if (isInWishlist) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                
+                // Arrow indicator
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "View details",
+                    modifier = Modifier
+                        .size(20.dp)
+                        .rotate(180f),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
@@ -500,7 +527,8 @@ fun MovieList(
     isLoadingMore: Boolean,
     hasMoreMovies: Boolean,
     isGridView: Boolean,
-    onMovieClick: (com.tofiq.myimdb.data.model.domain.MovieResponse.Movie) -> Unit
+    onMovieClick: (com.tofiq.myimdb.data.model.domain.MovieResponse.Movie) -> Unit,
+    movieViewModel: com.tofiq.myimdb.ui.viewmodel.MovieViewModel
 ) {
     if (isGridView) {
         val gridState = rememberLazyGridState()
@@ -538,7 +566,11 @@ fun MovieList(
             ) { movie ->
                 GridMovieCard(
                     movie = movie,
-                    onMovieClick = onMovieClick
+                    onMovieClick = onMovieClick,
+                    isInWishlist = movieViewModel.isInWishlist(movie.id ?: 0),
+                    onWishlistToggle = {
+                        movie.id?.let { movieViewModel.toggleWishlist(it) }
+                    }
                 )
             }
 
@@ -660,7 +692,11 @@ fun MovieList(
             ) { _, movie ->
                 MovieCard(
                     movie = movie,
-                    onMovieClick = onMovieClick
+                    onMovieClick = onMovieClick,
+                    isInWishlist = movieViewModel.isInWishlist(movie.id ?: 0),
+                    onWishlistToggle = {
+                        movie.id?.let { movieViewModel.toggleWishlist(it) }
+                    }
                 )
             }
 

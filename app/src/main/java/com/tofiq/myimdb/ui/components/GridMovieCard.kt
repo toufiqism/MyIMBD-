@@ -5,6 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -27,7 +29,9 @@ import com.tofiq.myimdb.data.model.domain.MovieResponse
 @Composable
 fun GridMovieCard(
     movie: MovieResponse.Movie,
-    onMovieClick: (MovieResponse.Movie) -> Unit
+    onMovieClick: (MovieResponse.Movie) -> Unit,
+    isInWishlist: Boolean = false,
+    onWishlistToggle: (() -> Unit)? = null
 ) {
     Card(
         modifier = Modifier
@@ -45,7 +49,7 @@ fun GridMovieCard(
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
-            // Poster Image
+            // Poster Image with Wishlist Button
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -113,6 +117,28 @@ fun GridMovieCard(
                         }
                     }
                 )
+                
+                // Wishlist button overlay
+                if (onWishlistToggle != null) {
+                    IconButton(
+                        onClick = onWishlistToggle,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
+                            .size(32.dp)
+                            .background(
+                                MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
+                                RoundedCornerShape(16.dp)
+                            )
+                    ) {
+                        Icon(
+                            imageVector = if (isInWishlist) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = if (isInWishlist) "Remove from wishlist" else "Add to wishlist",
+                            modifier = Modifier.size(18.dp),
+                            tint = if (isInWishlist) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
             }
 
             // Movie Details
