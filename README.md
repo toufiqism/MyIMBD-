@@ -137,9 +137,33 @@ data class MovieEntity(
 The app uses StateFlow for reactive state management:
 
 - **Loading State**: Shows loading indicator with animated progress
-- **Success State**: Displays movie data in a scrollable list
+- **Success State**: Displays movie data in a scrollable list with pagination
 - **Error State**: Shows error message with retry option
 - **Cached Data**: Displays cached data while refreshing in background
+- **Pagination State**: Manages loading more movies with separate loading states
+
+### Pagination Implementation
+
+The app implements efficient pagination with the following features:
+
+- **Page Size**: 10 movies per page for optimal performance
+- **Smart Loading**: Automatically loads more content when user scrolls near the end
+- **Loading States**: Separate loading indicators for initial load and pagination
+- **Memory Efficient**: Only displays loaded movies, not all movies at once
+- **Scroll Detection**: Uses LazyListState to detect when to load more content
+- **End Detection**: Shows appropriate message when all movies are loaded
+
+### Performance Optimization
+
+The app is optimized for performance with the following characteristics:
+
+- **Clean Code**: Simplified UI without complex animations for better performance
+- **Efficient Rendering**: Direct rendering without animation overhead
+- **Fast Loading**: Quick display of content without animation delays
+- **Memory Efficient**: Reduced memory usage without animation state management
+- **Smooth Scrolling**: Native scrolling performance without animation interference
+- **Responsive UI**: Immediate response to user interactions
+- **Material Design**: Follows Material Design principles with clean aesthetics
 
 ### Navigation Flow
 
@@ -212,6 +236,10 @@ Key dependencies used:
 ## Recent Updates
 
 ### Movie List Screen Enhancement (Latest)
+- **Pagination Support**: Loads 10 movies initially and loads 10 more when scrolling near the end
+- **Smart Loading**: Automatically detects when user scrolls near the end to load more content
+- **Loading Indicators**: Shows loading indicator at the bottom while fetching more movies
+- **End of List Indicator**: Displays a message when all movies have been loaded
 - **Poster Image Display**: Added movie poster images using Coil library for smooth loading
 - **Placeholder Images**: Shows a movie icon placeholder when poster images are unavailable or fail to load
 - **Loading States**: Displays a loading indicator while images are being fetched
@@ -219,6 +247,7 @@ Key dependencies used:
 - **Enhanced Information Display**: Shows title, year, genre, director, and plot in a compact format
 - **Better Typography**: Improved text hierarchy with proper font sizes and colors
 - **Responsive Design**: Optimized for different screen sizes with proper spacing and text wrapping
+- **Performance Optimized**: Clean, efficient code without complex animations for better performance
 
 ## Future Enhancements
 
