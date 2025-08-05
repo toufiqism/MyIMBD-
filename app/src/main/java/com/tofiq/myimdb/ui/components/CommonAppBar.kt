@@ -5,6 +5,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,18 +22,43 @@ fun CommonAppBar(
     showBackButton: Boolean = false,
     showRefreshButton: Boolean = false,
     showFilterButton: Boolean = false,
+    showSearchButton: Boolean = false,
+    isSearchActive: Boolean = false,
+    searchQuery: String = "",
     onBackClick: (() -> Unit)? = null,
     onRefreshClick: (() -> Unit)? = null,
     onFilterClick: (() -> Unit)? = null,
+    onSearchClick: (() -> Unit)? = null,
+    onSearchQueryChange: ((String) -> Unit)? = null,
+    onSearchActiveChange: ((Boolean) -> Unit)? = null,
     isLoading: Boolean = false
 ) {
     TopAppBar(
         title = {
-            Text(
-                text = title,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
+            if (isSearchActive) {
+                TextField(
+                    value = searchQuery,
+                    onValueChange = { onSearchQueryChange?.invoke(it) },
+                    placeholder = {
+                        Text("Search movies...")
+                    },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                        disabledContainerColor = MaterialTheme.colorScheme.surface,
+                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+                    )
+                )
+            } else {
+                Text(
+                    text = title,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         },
         navigationIcon = {
             if (showBackButton && onBackClick != null) {
@@ -47,26 +74,53 @@ fun CommonAppBar(
             }
         },
         actions = {
-            if (showFilterButton && onFilterClick != null) {
+            if (isSearchActive) {
+                // Close search button
                 IconButton(
-                    onClick = onFilterClick,
+                    onClick = { onSearchActiveChange?.invoke(false) },
                     enabled = !isLoading
                 ) {
                     Icon(
-                        imageVector = Icons.Default.FilterList,
-                        contentDescription = "Filter"
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close search"
                     )
                 }
-            }
-            if (showRefreshButton && onRefreshClick != null) {
-                IconButton(
-                    onClick = onRefreshClick,
-                    enabled = !isLoading
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = "Refresh"
-                    )
+            } else {
+                // Search button
+                if (showSearchButton && onSearchClick != null) {
+                    IconButton(
+                        onClick = onSearchClick,
+                        enabled = !isLoading
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search"
+                        )
+                    }
+                }
+                // Filter button
+                if (showFilterButton && onFilterClick != null) {
+                    IconButton(
+                        onClick = onFilterClick,
+                        enabled = !isLoading
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.FilterList,
+                            contentDescription = "Filter"
+                        )
+                    }
+                }
+                // Refresh button
+                if (showRefreshButton && onRefreshClick != null) {
+                    IconButton(
+                        onClick = onRefreshClick,
+                        enabled = !isLoading
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Refresh"
+                        )
+                    }
                 }
             }
         },

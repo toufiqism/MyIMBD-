@@ -36,6 +36,13 @@ class MovieViewModel @Inject constructor(
     val selectedGenre: StateFlow<String?> = _selectedGenre.asStateFlow()
     private val _availableGenres = MutableStateFlow<List<String>>(emptyList())
     val availableGenres: StateFlow<List<String>> = _availableGenres.asStateFlow()
+    
+    // Search functionality
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+    private val _isSearchActive = MutableStateFlow(false)
+    val isSearchActive: StateFlow<Boolean> = _isSearchActive.asStateFlow()
+    
     private val pageSize = 10
 
     init {
@@ -98,14 +105,13 @@ class MovieViewModel @Inject constructor(
         
         val allMovies = _allMovies.value
         val selectedGenre = _selectedGenre.value
+        val searchQuery = _searchQuery.value
         
-        // Filter movies by selected genre (already sorted by year desc)
-        val filteredMovies = if (selectedGenre != null) {
-            allMovies.filterNotNull().filter { movie ->
-                movie.genres?.contains(selectedGenre) == true
-            }
-        } else {
-            allMovies.filterNotNull()
+        // Filter movies by selected genre and search query
+        val filteredMovies = allMovies.filterNotNull().filter { movie ->
+            val matchesGenre = selectedGenre == null || movie.genres?.contains(selectedGenre) == true
+            val matchesSearch = searchQuery.isEmpty() || matchesSearchQuery(movie, searchQuery)
+            matchesGenre && matchesSearch
         }
         
         val currentPage = _currentPage.value
@@ -129,14 +135,13 @@ class MovieViewModel @Inject constructor(
     fun hasMoreMovies(): Boolean {
         val allMovies = _allMovies.value
         val selectedGenre = _selectedGenre.value
+        val searchQuery = _searchQuery.value
         
-        // Filter movies by selected genre
-        val filteredMovies = if (selectedGenre != null) {
-            allMovies.filterNotNull().filter { movie ->
-                movie.genres?.contains(selectedGenre) == true
-            }
-        } else {
-            allMovies.filterNotNull()
+        // Filter movies by selected genre and search query
+        val filteredMovies = allMovies.filterNotNull().filter { movie ->
+            val matchesGenre = selectedGenre == null || movie.genres?.contains(selectedGenre) == true
+            val matchesSearch = searchQuery.isEmpty() || matchesSearchQuery(movie, searchQuery)
+            matchesGenre && matchesSearch
         }
         
         val currentPage = _currentPage.value
@@ -161,6 +166,35 @@ class MovieViewModel @Inject constructor(
         _currentPage.value = 0
         _displayedMovies.value = emptyList()
         loadNextPage()
+    }
+    
+    // Search functionality
+    fun setSearchQuery(query: String) {
+        _searchQuery.value = query
+        _currentPage.value = 0
+        _displayedMovies.value = emptyList()
+        loadNextPage()
+    }
+    
+    fun setSearchActive(active: Boolean) {
+        _isSearchActive.value = active
+        if (!active) {
+            _searchQuery.value = ""
+            _currentPage.value = 0
+            _displayedMovies.value = emptyList()
+            loadNextPage()
+        }
+    }
+    
+    private fun matchesSearchQuery(movie: MovieResponse.Movie, query: String): Boolean {
+        val searchQuery = query.trim().lowercase()
+        if (searchQuery.isEmpty()) return true
+        
+        return movie.title?.lowercase()?.contains(searchQuery) == true ||
+               movie.plot?.lowercase()?.contains(searchQuery) == true ||
+               movie.director?.lowercase()?.contains(searchQuery) == true ||
+               movie.actors?.lowercase()?.contains(searchQuery) == true ||
+               movie.genres?.any { it?.lowercase()?.contains(searchQuery) == true } == true
     }
     
 

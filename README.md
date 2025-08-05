@@ -286,6 +286,11 @@ Key dependencies used:
 ## Recent Updates
 
 ### Movie List Screen Enhancement (Latest)
+- **Search Functionality**: Comprehensive search by movie title, plot, director, actors, and genres
+- **Search UI**: Integrated search bar in app bar with smooth transitions and clear functionality
+- **Real-time Search**: Instant search results as you type with optimized performance
+- **Search Indicators**: Clear display of active search queries with easy clear options
+- **Combined Filtering**: Search and genre filters work together seamlessly
 - **Enhanced Movie Cards**: Beautiful, modern card design with improved visual hierarchy
 - **Larger Poster Images**: 100dp poster images with rounded corners and elevation for depth
 - **Genre Tag System**: Beautiful pill-shaped genre tags with color-coded styling

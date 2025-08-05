@@ -116,6 +116,8 @@ fun HomeScreen(
     val isLoadingMore by movieViewModel.isLoadingMore.collectAsState()
     val selectedGenre by movieViewModel.selectedGenre.collectAsState()
     val availableGenres by movieViewModel.availableGenres.collectAsState()
+    val searchQuery by movieViewModel.searchQuery.collectAsState()
+    val isSearchActive by movieViewModel.isSearchActive.collectAsState()
 
     var showFilterDropdown by remember { mutableStateOf(false) }
 
@@ -125,8 +127,14 @@ fun HomeScreen(
                 title = "MyIMDB Movies",
                 showRefreshButton = true,
                 showFilterButton = true,
+                showSearchButton = true,
+                isSearchActive = isSearchActive,
+                searchQuery = searchQuery,
                 onRefreshClick = { movieViewModel.refreshMovies() },
                 onFilterClick = { showFilterDropdown = true },
+                onSearchClick = { movieViewModel.setSearchActive(true) },
+                onSearchQueryChange = { movieViewModel.setSearchQuery(it) },
+                onSearchActiveChange = { movieViewModel.setSearchActive(it) },
                 isLoading = isLoading
             )
         }
@@ -136,8 +144,8 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Filter indicator
-            if (selectedGenre != null) {
+            // Filter and search indicators
+            if (selectedGenre != null || searchQuery.isNotEmpty()) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -146,25 +154,56 @@ fun HomeScreen(
                         containerColor = MaterialTheme.colorScheme.primaryContainer
                     )
                 ) {
-                    Row(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .padding(12.dp)
                     ) {
-                        Text(
-                            text = "Filtered by: $selectedGenre",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        Spacer(modifier = Modifier.weight(1f))
-                        TextButton(
-                            onClick = { movieViewModel.setSelectedGenre(null) }
-                        ) {
-                            Text(
-                                text = "Clear",
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
+                        if (selectedGenre != null) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Filtered by: $selectedGenre",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                TextButton(
+                                    onClick = { movieViewModel.setSelectedGenre(null) }
+                                ) {
+                                    Text(
+                                        text = "Clear",
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                }
+                            }
+                        }
+                        
+                        if (searchQuery.isNotEmpty()) {
+                            if (selectedGenre != null) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Search: \"$searchQuery\"",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                TextButton(
+                                    onClick = { movieViewModel.setSearchQuery("") }
+                                ) {
+                                    Text(
+                                        text = "Clear",
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                }
+                            }
                         }
                     }
                 }
