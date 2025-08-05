@@ -43,6 +43,12 @@ class MovieViewModel @Inject constructor(
     private val _isSearchActive = MutableStateFlow(false)
     val isSearchActive: StateFlow<Boolean> = _isSearchActive.asStateFlow()
     
+    // Wishlist functionality
+    private val _wishlistMovies = MutableStateFlow<Set<Int>>(emptySet())
+    val wishlistMovies: StateFlow<Set<Int>> = _wishlistMovies.asStateFlow()
+    private val _wishlistCount = MutableStateFlow(0)
+    val wishlistCount: StateFlow<Int> = _wishlistCount.asStateFlow()
+    
     private val pageSize = 10
 
     init {
@@ -206,5 +212,27 @@ class MovieViewModel @Inject constructor(
             .distinct()
             .sorted()
         _availableGenres.value = genres
+    }
+    
+    // Wishlist functionality
+    fun toggleWishlist(movieId: Int) {
+        val currentWishlist = _wishlistMovies.value.toMutableSet()
+        if (currentWishlist.contains(movieId)) {
+            currentWishlist.remove(movieId)
+        } else {
+            currentWishlist.add(movieId)
+        }
+        _wishlistMovies.value = currentWishlist
+        _wishlistCount.value = currentWishlist.size
+    }
+    
+    fun isInWishlist(movieId: Int): Boolean {
+        return _wishlistMovies.value.contains(movieId)
+    }
+    
+    fun getWishlistMovies(): List<MovieResponse.Movie> {
+        return _allMovies.value.filterNotNull().filter { movie ->
+            movie.id != null && _wishlistMovies.value.contains(movie.id)
+        }
     }
 } 

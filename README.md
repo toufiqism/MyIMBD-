@@ -286,6 +286,11 @@ Key dependencies used:
 ## Recent Updates
 
 ### Movie List Screen Enhancement (Latest)
+- **Wishlist System**: Complete wishlist functionality with add/remove movies from details screen
+- **Wishlist UI**: App header shows wishlist icon with count badge for wishlisted movies
+- **Wishlist Screen**: Dedicated screen showing all wishlisted movies with beautiful card design
+- **Wishlist Animation**: Flying heart animation from movie details to app header when adding to wishlist
+- **Wishlist Management**: Toggle wishlist status with visual feedback and state persistence
 - **Search Functionality**: Comprehensive search by movie title, plot, director, actors, and genres
 - **Search UI**: Integrated search bar in app bar with smooth transitions and clear functionality
 - **Real-time Search**: Instant search results as you type with optimized performance
@@ -321,11 +326,12 @@ Key dependencies used:
 ## Future Enhancements
 
 Potential improvements for the app:
-- Search functionality with local database queries
-- Movie details screen with full information
-- Pagination for large datasets
+- Persistent wishlist storage using Room database
+- Wishlist sharing functionality
+- Advanced wishlist organization (folders, tags)
 - Unit tests for ViewModels and Repository
 - UI tests for Compose screens
 - Dark/Light theme support
-- Movie favorites functionality
+- Movie ratings and reviews
 - Advanced filtering and sorting options
+- Offline wishlist management

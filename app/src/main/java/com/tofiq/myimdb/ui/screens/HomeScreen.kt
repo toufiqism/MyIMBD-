@@ -108,7 +108,8 @@ fun ErrorState(
 @Composable
 fun HomeScreen(
     movieViewModel: MovieViewModel,
-    onMovieClick: (com.tofiq.myimdb.data.model.domain.MovieResponse.Movie) -> Unit
+    onMovieClick: (com.tofiq.myimdb.data.model.domain.MovieResponse.Movie) -> Unit,
+    onWishlistClick: () -> Unit
 ) {
     val movieState by movieViewModel.movieState.collectAsState()
     val isLoading by movieViewModel.isLoading.collectAsState()
@@ -118,6 +119,7 @@ fun HomeScreen(
     val availableGenres by movieViewModel.availableGenres.collectAsState()
     val searchQuery by movieViewModel.searchQuery.collectAsState()
     val isSearchActive by movieViewModel.isSearchActive.collectAsState()
+    val wishlistCount by movieViewModel.wishlistCount.collectAsState()
 
     var showFilterDropdown by remember { mutableStateOf(false) }
 
@@ -128,11 +130,14 @@ fun HomeScreen(
                 showRefreshButton = true,
                 showFilterButton = true,
                 showSearchButton = true,
+                showWishlistButton = true,
+                wishlistCount = wishlistCount,
                 isSearchActive = isSearchActive,
                 searchQuery = searchQuery,
                 onRefreshClick = { movieViewModel.refreshMovies() },
                 onFilterClick = { showFilterDropdown = true },
                 onSearchClick = { movieViewModel.setSearchActive(true) },
+                onWishlistClick = onWishlistClick,
                 onSearchQueryChange = { movieViewModel.setSearchQuery(it) },
                 onSearchActiveChange = { movieViewModel.setSearchActive(it) },
                 isLoading = isLoading

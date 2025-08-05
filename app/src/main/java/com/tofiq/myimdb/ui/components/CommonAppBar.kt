@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,12 +24,15 @@ fun CommonAppBar(
     showRefreshButton: Boolean = false,
     showFilterButton: Boolean = false,
     showSearchButton: Boolean = false,
+    showWishlistButton: Boolean = false,
+    wishlistCount: Int = 0,
     isSearchActive: Boolean = false,
     searchQuery: String = "",
     onBackClick: (() -> Unit)? = null,
     onRefreshClick: (() -> Unit)? = null,
     onFilterClick: (() -> Unit)? = null,
     onSearchClick: (() -> Unit)? = null,
+    onWishlistClick: (() -> Unit)? = null,
     onSearchQueryChange: ((String) -> Unit)? = null,
     onSearchActiveChange: ((Boolean) -> Unit)? = null,
     isLoading: Boolean = false
@@ -108,6 +112,32 @@ fun CommonAppBar(
                             imageVector = Icons.Default.FilterList,
                             contentDescription = "Filter"
                         )
+                    }
+                }
+                // Wishlist button
+                if (showWishlistButton && onWishlistClick != null) {
+                    Box {
+                        IconButton(
+                            onClick = onWishlistClick,
+                            enabled = !isLoading
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Favorite,
+                                contentDescription = "Wishlist"
+                            )
+                        }
+                        if (wishlistCount > 0) {
+                            Badge(
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .offset(x = (-8).dp, y = 8.dp)
+                            ) {
+                                Text(
+                                    text = if (wishlistCount > 99) "99+" else wishlistCount.toString(),
+                                    fontSize = 10.sp
+                                )
+                            }
+                        }
                     }
                 }
                 // Refresh button

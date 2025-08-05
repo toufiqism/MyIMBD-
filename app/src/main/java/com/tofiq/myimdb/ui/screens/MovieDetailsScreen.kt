@@ -23,6 +23,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -56,7 +58,9 @@ import com.tofiq.myimdb.ui.components.CommonAppBar
 @Composable
 fun MovieDetailsScreen(
     movie: MovieResponse.Movie,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onAddToWishlist: (Int) -> Unit,
+    isInWishlist: Boolean
 ) {
     var isVisible by remember { mutableStateOf(false) }
 
@@ -127,7 +131,7 @@ fun MovieDetailsScreen(
                                 .build(),
                             contentDescription = "Poster for ${movie.title}",
                             modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop,
+                            contentScale = ContentScale.Fit,
                             loading = {
                                 Box(
                                     modifier = Modifier
@@ -172,6 +176,25 @@ fun MovieDetailsScreen(
                                 )
                         )
 
+                        // Wishlist Button at top right
+                        androidx.compose.material3.IconButton(
+                            onClick = { movie.id?.let { onAddToWishlist(it) } },
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(16.dp)
+                                .size(48.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                                    RoundedCornerShape(24.dp)
+                                )
+                        ) {
+                            Icon(
+                                imageVector = if (isInWishlist) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                contentDescription = if (isInWishlist) "Remove from wishlist" else "Add to wishlist",
+                                modifier = Modifier.size(24.dp),
+                                tint = if (isInWishlist) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
 
                         // Movie Title at bottom
                         Column(

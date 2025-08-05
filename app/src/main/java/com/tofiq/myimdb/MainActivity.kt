@@ -19,6 +19,7 @@ import com.tofiq.myimdb.data.model.domain.MovieResponse
 import com.tofiq.myimdb.ui.screens.HomeScreen
 import com.tofiq.myimdb.ui.screens.MovieDetailsScreen
 import com.tofiq.myimdb.ui.screens.SplashScreen
+import com.tofiq.myimdb.ui.screens.WishlistScreen
 import com.tofiq.myimdb.ui.theme.MyIMDBTheme
 import com.tofiq.myimdb.ui.viewmodel.MovieViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -70,6 +71,9 @@ fun MyIMDBApp(movieViewModel: MovieViewModel) {
                     // Navigate to details with movie data passed through ViewModel
                     movieViewModel.setSelectedMovie(movie)
                     navController.navigate("movie_details")
+                },
+                onWishlistClick = {
+                    navController.navigate("wishlist")
                 }
             )
         }
@@ -81,9 +85,26 @@ fun MyIMDBApp(movieViewModel: MovieViewModel) {
                     movie = movie,
                     onBackClick = {
                         navController.popBackStack()
-                    }
+                    },
+                    onAddToWishlist = { movieId ->
+                        movieViewModel.toggleWishlist(movieId)
+                    },
+                    isInWishlist = movieViewModel.isInWishlist(selectedMovie.id ?: 0)
                 )
             }
+        }
+        
+        composable("wishlist") {
+            WishlistScreen(
+                movieViewModel = movieViewModel,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onMovieClick = { movie ->
+                    movieViewModel.setSelectedMovie(movie)
+                    navController.navigate("movie_details")
+                }
+            )
         }
     }
 }
