@@ -1,11 +1,15 @@
 package com.tofiq.myimdb.di
 
+import android.content.Context
+import com.tofiq.myimdb.data.local.MovieDB
+import com.tofiq.myimdb.data.local.dao.MovieEntityDAO
 import com.tofiq.myimdb.data.remote.MovieApiService
 import com.tofiq.myimdb.data.repository.MovieRepository
 import com.tofiq.myimdb.data.repository.MovieRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -47,7 +51,19 @@ object NetworkModule {
     
     @Provides
     @Singleton
-    fun provideMovieRepository(apiService: MovieApiService): MovieRepository {
-        return MovieRepositoryImpl(apiService)
+    fun provideMovieDatabase(@ApplicationContext context: Context): MovieDB {
+        return MovieDB.getInstance(context)
+    }
+    
+    @Provides
+    @Singleton
+    fun provideMovieDao(database: MovieDB): MovieEntityDAO {
+        return database.movieDao()
+    }
+    
+    @Provides
+    @Singleton
+    fun provideMovieRepository(apiService: MovieApiService, movieDao: MovieEntityDAO): MovieRepository {
+        return MovieRepositoryImpl(apiService, movieDao)
     }
 } 

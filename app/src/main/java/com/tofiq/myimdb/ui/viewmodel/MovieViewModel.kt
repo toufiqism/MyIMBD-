@@ -19,20 +19,31 @@ class MovieViewModel @Inject constructor(
 
     private val _movieState = MutableStateFlow<Resource<MovieResponse>>(Resource.Loading())
     val movieState: StateFlow<Resource<MovieResponse>> = _movieState.asStateFlow()
+    
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     init {
-        getMovies()
+        loadMovies()
     }
 
-    fun getMovies() {
+    fun loadMovies() {
         viewModelScope.launch {
             _movieState.value = Resource.Loading()
+            _isLoading.value = true
             val result = movieRepository.getMovies()
             _movieState.value = result
+            _isLoading.value = false
         }
     }
 
     fun refreshMovies() {
-        getMovies()
+        viewModelScope.launch {
+            _movieState.value = Resource.Loading()
+            _isLoading.value = true
+            val result = movieRepository.refreshMovies()
+            _movieState.value = result
+            _isLoading.value = false
+        }
     }
 } 

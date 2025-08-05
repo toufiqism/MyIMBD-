@@ -5,4 +5,5 @@ import com.tofiq.myimdb.util.Resource
 
 interface MovieRepository {
     suspend fun getMovies(): Resource<MovieResponse>
+    suspend fun refreshMovies(): Resource<MovieResponse>
 }

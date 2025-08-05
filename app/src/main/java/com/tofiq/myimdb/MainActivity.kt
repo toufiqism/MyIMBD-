@@ -6,17 +6,17 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.tofiq.myimdb.ui.screens.HomeScreen
+import com.tofiq.myimdb.ui.screens.SplashScreen
 import com.tofiq.myimdb.ui.theme.MyIMDBTheme
 import com.tofiq.myimdb.ui.viewmodel.MovieViewModel
-import com.tofiq.myimdb.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -29,11 +29,11 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyIMDBTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    MovieScreen(
-                        modifier = Modifier.padding(innerPadding),
-                        movieViewModel = movieViewModel
-                    )
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    MyIMDBApp(movieViewModel = movieViewModel)
                 }
             }
         }
@@ -41,42 +41,26 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MovieScreen(
-    modifier: Modifier = Modifier,
-    movieViewModel: MovieViewModel
-) {
-    val movieState by movieViewModel.movieState.collectAsState()
+fun MyIMDBApp(movieViewModel: MovieViewModel) {
+    val navController = rememberNavController()
     
-    when (movieState) {
-        is Resource.Loading -> {
-            Text(text = "Loading movies...", modifier = modifier)
-        }
-        is Resource.Success -> {
-            val movies = (movieState as Resource.Success).data
-            Text(
-                text = "Loaded ${movies?.movies?.size ?: 0} movies",
-                modifier = modifier
+    NavHost(
+        navController = navController,
+        startDestination = "splash"
+    ) {
+        composable("splash") {
+            SplashScreen(
+                movieViewModel = movieViewModel,
+                onNavigateToHome = {
+                    navController.navigate("home") {
+                        popUpTo("splash") { inclusive = true }
+                    }
+                }
             )
         }
-        is Resource.Error -> {
-            val error = (movieState as Resource.Error).message
-            Text(text = "Error: $error", modifier = modifier)
+        
+        composable("home") {
+            HomeScreen(movieViewModel = movieViewModel)
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MyIMDBTheme {
-        Greeting("Android")
     }
 }
