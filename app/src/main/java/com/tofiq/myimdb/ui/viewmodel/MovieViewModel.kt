@@ -64,7 +64,7 @@ class MovieViewModel @Inject constructor(
         loadWishlistData()
     }
 
-    private fun loadWishlistData() {
+    internal fun loadWishlistData() {
         viewModelScope.launch {
             try {
                 val wishlistMovies = movieRepository.getWishlistMovies()

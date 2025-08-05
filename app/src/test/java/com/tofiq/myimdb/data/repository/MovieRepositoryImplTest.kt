@@ -2,6 +2,7 @@ package com.tofiq.myimdb.data.repository
 
 import com.google.gson.Gson
 import com.tofiq.myimdb.data.local.dao.MovieEntityDAO
+import com.tofiq.myimdb.data.local.dao.WishlistEntityDAO
 import com.tofiq.myimdb.data.local.entity.MovieEntity
 import com.tofiq.myimdb.data.model.domain.MovieResponse
 import com.tofiq.myimdb.data.remote.MovieApiService
@@ -23,6 +24,7 @@ class MovieRepositoryImplTest {
     private lateinit var movieRepository: MovieRepositoryImpl
     private lateinit var apiService: MovieApiService
     private lateinit var movieDao: MovieEntityDAO
+    private lateinit var wishlistDao: WishlistEntityDAO
     private lateinit var gson: Gson
 
     private val mockMovies = listOf(
@@ -59,8 +61,9 @@ class MovieRepositoryImplTest {
     fun setup() {
         apiService = mockk()
         movieDao = mockk()
+        wishlistDao = mockk()
         gson = Gson()
-        movieRepository = MovieRepositoryImpl(apiService, movieDao)
+        movieRepository = MovieRepositoryImpl(apiService, movieDao, wishlistDao)
     }
 
     @Test
@@ -458,5 +461,149 @@ class MovieRepositoryImplTest {
         assertEquals(4, result.data?.genres?.size)
         assertEquals("Test Movie 1", result.data?.movies?.get(0)?.title)
         assertEquals("Test Movie 2", result.data?.movies?.get(1)?.title)
+    }
+
+    // Wishlist Tests
+    @Test
+    fun `getWishlistMovies should return empty list when no wishlist items`() = runTest {
+        // Given
+        coEvery { wishlistDao.getAllWishlistMovies() } returns emptyList()
+
+        // When
+        val result = movieRepository.getWishlistMovies()
+
+        // Then
+        assertTrue(result.isEmpty())
+        coVerify { wishlistDao.getAllWishlistMovies() }
+    }
+
+    @Test
+    fun `getWishlistMovies should return wishlist movies`() = runTest {
+        // Given
+        val wishlistEntities = listOf(
+            com.tofiq.myimdb.data.local.entity.WishlistEntity(
+                movieId = 1,
+                title = "Test Movie 1",
+                year = "2023",
+                posterUrl = "https://example.com/poster1.jpg",
+                plot = "Test plot 1",
+                director = "Director 1",
+                actors = "Actor 1, Actor 2",
+                runtime = "120",
+                genres = "Action,Drama"
+            )
+        )
+        coEvery { wishlistDao.getAllWishlistMovies() } returns wishlistEntities
+
+        // When
+        val result = movieRepository.getWishlistMovies()
+
+        // Then
+        assertEquals(1, result.size)
+        assertEquals(1, result[0].id)
+        assertEquals("Test Movie 1", result[0].title)
+        assertEquals("2023", result[0].year)
+        assertEquals(listOf("Action", "Drama"), result[0].genres)
+        coVerify { wishlistDao.getAllWishlistMovies() }
+    }
+
+    @Test
+    fun `addToWishlist should insert movie into wishlist`() = runTest {
+        // Given
+        val movie = mockMovies[0]
+        coEvery { wishlistDao.insertWishlistMovie(any()) } returns Unit
+
+        // When
+        movieRepository.addToWishlist(movie)
+
+        // Then
+        coVerify {
+            wishlistDao.insertWishlistMovie(match {
+                it.movieId == movie.id &&
+                it.title == movie.title &&
+                it.year == movie.year &&
+                it.genres == "Action,Drama"
+            })
+        }
+    }
+
+    @Test
+    fun `removeFromWishlist should delete movie from wishlist`() = runTest {
+        // Given
+        val movieId = 1
+        coEvery { wishlistDao.deleteWishlistMovieById(movieId) } returns Unit
+
+        // When
+        movieRepository.removeFromWishlist(movieId)
+
+        // Then
+        coVerify { wishlistDao.deleteWishlistMovieById(movieId) }
+    }
+
+    @Test
+    fun `isMovieInWishlist should return true when movie exists in wishlist`() = runTest {
+        // Given
+        val movieId = 1
+        coEvery { wishlistDao.isMovieInWishlist(movieId) } returns true
+
+        // When
+        val result = movieRepository.isMovieInWishlist(movieId)
+
+        // Then
+        assertTrue(result)
+        coVerify { wishlistDao.isMovieInWishlist(movieId) }
+    }
+
+    @Test
+    fun `isMovieInWishlist should return false when movie does not exist in wishlist`() = runTest {
+        // Given
+        val movieId = 1
+        coEvery { wishlistDao.isMovieInWishlist(movieId) } returns false
+
+        // When
+        val result = movieRepository.isMovieInWishlist(movieId)
+
+        // Then
+        assertFalse(result)
+        coVerify { wishlistDao.isMovieInWishlist(movieId) }
+    }
+
+    @Test
+    fun `getWishlistCount should return correct count`() = runTest {
+        // Given
+        val count = 5
+        coEvery { wishlistDao.getWishlistCount() } returns count
+
+        // When
+        val result = movieRepository.getWishlistCount()
+
+        // Then
+        assertEquals(count, result)
+        coVerify { wishlistDao.getWishlistCount() }
+    }
+
+    @Test
+    fun `wishlist operations should handle exceptions gracefully`() = runTest {
+        // Given
+        coEvery { wishlistDao.getAllWishlistMovies() } throws RuntimeException("Database error")
+
+        // When
+        val result = movieRepository.getWishlistMovies()
+
+        // Then
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `addToWishlist should handle null movie id gracefully`() = runTest {
+        // Given
+        val movie = mockMovies[0].copy(id = null)
+        coEvery { wishlistDao.insertWishlistMovie(any()) } returns Unit
+
+        // When
+        movieRepository.addToWishlist(movie)
+
+        // Then
+        coVerify(exactly = 0) { wishlistDao.insertWishlistMovie(any()) }
     }
 } 

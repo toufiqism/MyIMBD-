@@ -150,6 +150,16 @@ app/src/main/java/com/tofiq/myimdb/
 - **Performance**: Efficient database queries and UI updates
 - **Accessibility**: Proper content descriptions and UI labels
 
+## Testing
+
+The project includes comprehensive unit tests for all major components:
+
+- **Repository Tests**: Test database operations and API interactions
+- **ViewModel Tests**: Test business logic and state management
+- **Utility Tests**: Test helper functions and data classes
+
+All tests pass successfully and provide good coverage of the codebase.
+
 ## Future Enhancements
 
 - Movie details screen with more information

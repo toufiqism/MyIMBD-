@@ -76,6 +76,9 @@ class MovieViewModelTest {
         movieRepository = mockk()
         // Set up default mock behavior before creating ViewModel
         coEvery { movieRepository.getMovies() } returns Resource.Success(mockMovieResponse)
+        coEvery { movieRepository.getWishlistMovies() } returns emptyList()
+        coEvery { movieRepository.isMovieInWishlist(any()) } returns false
+        coEvery { movieRepository.getWishlistCount() } returns 0
         movieViewModel = MovieViewModel(movieRepository)
     }
 
@@ -208,6 +211,12 @@ class MovieViewModelTest {
 
     @Test
     fun `toggleWishlist should add movie to wishlist`() = runTest {
+        // Given
+        coEvery { movieRepository.isMovieInWishlist(1) } returns false
+        coEvery { movieRepository.addToWishlist(any()) } returns Unit
+        coEvery { movieRepository.getWishlistCount() } returns 1
+        coEvery { movieRepository.getWishlistMovies() } returns listOf(mockMovies[0])
+
         // When
         movieViewModel.toggleWishlist(1)
         testDispatcher.scheduler.advanceUntilIdle()
@@ -223,8 +232,10 @@ class MovieViewModelTest {
     @Test
     fun `toggleWishlist should remove movie from wishlist when already present`() = runTest {
         // Given
-        movieViewModel.toggleWishlist(1)
-        testDispatcher.scheduler.advanceUntilIdle()
+        coEvery { movieRepository.isMovieInWishlist(1) } returns true
+        coEvery { movieRepository.removeFromWishlist(1) } returns Unit
+        coEvery { movieRepository.getWishlistCount() } returns 0
+        coEvery { movieRepository.getWishlistMovies() } returns emptyList()
 
         // When
         movieViewModel.toggleWishlist(1)
@@ -241,10 +252,16 @@ class MovieViewModelTest {
     @Test
     fun `isInWishlist should return true for wishlisted movie`() = runTest {
         // Given
+        coEvery { movieRepository.isMovieInWishlist(1) } returns false
+        coEvery { movieRepository.addToWishlist(any()) } returns Unit
+        coEvery { movieRepository.getWishlistCount() } returns 1
+        coEvery { movieRepository.getWishlistMovies() } returns listOf(mockMovies[0])
+
+        // When
         movieViewModel.toggleWishlist(1)
         testDispatcher.scheduler.advanceUntilIdle()
 
-        // When & Then
+        // Then
         assertTrue(movieViewModel.isInWishlist(1))
         assertFalse(movieViewModel.isInWishlist(2))
     }
@@ -252,21 +269,18 @@ class MovieViewModelTest {
     @Test
     fun `getWishlistMovies should return list of wishlisted movies`() = runTest {
         // Given
-        coEvery { movieRepository.getMovies() } returns Resource.Success(mockMovieResponse)
-        movieViewModel.loadMovies()
-        testDispatcher.scheduler.advanceUntilIdle()
-        
-        movieViewModel.toggleWishlist(1)
-        movieViewModel.toggleWishlist(2)
-        testDispatcher.scheduler.advanceUntilIdle()
+        val wishlistMovies = listOf(mockMovies[0], mockMovies[1])
+        coEvery { movieRepository.getWishlistMovies() } returns wishlistMovies
 
-        // When
-        val wishlistMovies = movieViewModel.getWishlistMovies()
+        // When - need to trigger loadWishlistData first
+        movieViewModel.loadWishlistData()
+        testDispatcher.scheduler.advanceUntilIdle()
+        val result = movieViewModel.getWishlistMovies()
 
         // Then
-        assertEquals(2, wishlistMovies.size)
-        assertTrue(wishlistMovies.any { it.id == 1 })
-        assertTrue(wishlistMovies.any { it.id == 2 })
+        assertEquals(2, result.size)
+        assertTrue(result.any { it.id == 1 })
+        assertTrue(result.any { it.id == 2 })
     }
 
     @Test
@@ -451,14 +465,19 @@ class MovieViewModelTest {
 
     @Test
     fun `multiple wishlist operations should work correctly`() = runTest {
-        // Given
-        coEvery { movieRepository.getMovies() } returns Resource.Success(mockMovieResponse)
-        movieViewModel.loadMovies()
-        testDispatcher.scheduler.advanceUntilIdle()
+        // Given - First set of operations (adding movies)
+        coEvery { movieRepository.isMovieInWishlist(1) } returns false
+        coEvery { movieRepository.isMovieInWishlist(2) } returns false
+        coEvery { movieRepository.isMovieInWishlist(3) } returns false
+        coEvery { movieRepository.addToWishlist(any()) } returns Unit
+        coEvery { movieRepository.getWishlistCount() } returns 3
+        coEvery { movieRepository.getWishlistMovies() } returns listOf(mockMovies[0], mockMovies[1], mockMovies[2])
 
-        // When
+        // When - Add movies to wishlist
         movieViewModel.toggleWishlist(1)
+        testDispatcher.scheduler.advanceUntilIdle()
         movieViewModel.toggleWishlist(2)
+        testDispatcher.scheduler.advanceUntilIdle()
         movieViewModel.toggleWishlist(3)
         testDispatcher.scheduler.advanceUntilIdle()
 
@@ -466,8 +485,14 @@ class MovieViewModelTest {
         val wishlistCount = movieViewModel.wishlistCount.first()
         assertEquals(3, wishlistCount)
 
-        // When
-        movieViewModel.toggleWishlist(2) // Remove one
+        // Given - Second set of operations (removing movie 2)
+        coEvery { movieRepository.isMovieInWishlist(2) } returns true
+        coEvery { movieRepository.removeFromWishlist(2) } returns Unit
+        coEvery { movieRepository.getWishlistCount() } returns 2
+        coEvery { movieRepository.getWishlistMovies() } returns listOf(mockMovies[0], mockMovies[2])
+
+        // When - Remove movie 2 from wishlist
+        movieViewModel.toggleWishlist(2)
         testDispatcher.scheduler.advanceUntilIdle()
 
         // Then
