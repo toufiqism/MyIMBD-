@@ -160,23 +160,6 @@ The project includes comprehensive unit tests for all major components:
 
 All tests pass successfully and provide good coverage of the codebase.
 
-## Future Enhancements
-
-- Movie details screen with more information
-- User ratings and reviews
-- Movie recommendations
-- Dark/Light theme toggle
-- Multiple language support
-- Push notifications for new releases
-- Social features (sharing wishlists)
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
 
 ## License
 
