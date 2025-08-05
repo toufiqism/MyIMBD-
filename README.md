@@ -157,12 +157,15 @@ The app implements efficient pagination with the following features:
 
 The app features a beautiful, animated details screen with the following characteristics:
 
+- **Enhanced Typography**: Beautiful fonts with proper hierarchy and spacing
 - **Hero Section**: Large poster image with gradient overlay for visual impact
 - **Animated Entrance**: Smooth slide-in animation when the screen opens
 - **Staggered Content**: Information animates in sequence for a polished look
 - **Genre Tags**: Beautiful pill-shaped tags with Material Design colors
 - **Comprehensive Information**: Shows all movie details including plot, director, cast, and runtime
-- **Smooth Navigation**: Back button with semi-transparent background
+- **Smooth Scrolling**: Full scrollable content for longer texts and comprehensive information
+- **Typography Hierarchy**: Clear section headers with proper font weights and sizes
+- **Improved Readability**: Better line heights and spacing for optimal reading experience
 - **Responsive Design**: Adapts to different screen sizes and orientations
 - **Loading States**: Proper loading indicators for image loading
 - **Error Handling**: Graceful fallback for missing images
@@ -283,29 +286,32 @@ Key dependencies used:
 ## Recent Updates
 
 ### Movie List Screen Enhancement (Latest)
+- **Enhanced Movie Cards**: Beautiful, modern card design with improved visual hierarchy
+- **Larger Poster Images**: 100dp poster images with rounded corners and elevation for depth
+- **Genre Tag System**: Beautiful pill-shaped genre tags with color-coded styling
+- **Year Display**: Star icon with year prominently displayed in primary color
+- **Arrow Indicators**: Subtle arrow indicators showing clickable cards
+- **Improved Loading States**: Enhanced loading indicators with gradient backgrounds and better styling
+- **End of List Design**: Beautiful end-of-list indicator with icon and descriptive text
+- **Better Spacing**: Optimized padding and spacing throughout the list for better visual flow
 - **Genre Filtering**: Filter dropdown in app bar with all available genres from the movie database
 - **Filter UI**: Beautiful dialog-based filter dropdown with Material Design styling
 - **Active Filter Indicator**: Shows currently selected genre with clear filter option
 - **Dynamic Genre List**: Automatically extracts and displays all unique genres from loaded movies
 - **Filter Persistence**: Maintains selected filter during pagination and refresh operations
 - **Common App Bar**: Consistent app bar design across all screens with unified navigation
-- **Simplified List View**: Clean, minimal movie cards showing only essential information (title, year, genre)
 - **Movie Details Screen**: Beautiful, animated details page with full movie information
 - **Navigation**: Smooth navigation between list and details with transition animations
 - **Hero Section**: Large poster image with gradient overlay and animated title
 - **Staggered Animations**: Content animates in sequence for a polished experience
-- **Genre Tags**: Beautiful pill-shaped genre tags with Material Design colors
 - **Pagination Support**: Loads 10 movies initially and loads 10 more when scrolling near the end
 - **Smart Loading**: Automatically detects when user scrolls near the end to load more content
-- **Loading Indicators**: Shows loading indicator at the bottom while fetching more movies
-- **End of List Indicator**: Displays a message when all movies have been loaded
 - **Poster Image Display**: Added movie poster images using Coil library for smooth loading
 - **Placeholder Images**: Shows a movie icon placeholder when poster images are unavailable or fail to load
-- **Loading States**: Displays a loading indicator while images are being fetched
-- **Improved Layout**: Changed from vertical to horizontal card layout for better visual appeal
-- **Better Typography**: Improved text hierarchy with proper font sizes and colors
 - **Responsive Design**: Optimized for different screen sizes with proper spacing and text wrapping
 - **Performance Optimized**: Clean, efficient code with optimized animations for better performance
+- **Custom Splash Screen**: Removed default Android splash screen for seamless app launch experience
+- **Enhanced Splash Screen**: Beautiful animated splash screen with theme integration and multiple animations
 
 ## Future Enhancements
 

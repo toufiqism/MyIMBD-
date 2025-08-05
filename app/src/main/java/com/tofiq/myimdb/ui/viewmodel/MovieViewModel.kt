@@ -52,7 +52,8 @@ class MovieViewModel @Inject constructor(
             when (result) {
                 is Resource.Success -> {
                     result.data?.movies?.let { movies ->
-                        _allMovies.value = movies
+                        // Sort by year descending
+                        _allMovies.value = movies.filterNotNull().sortedByDescending { it.year?.toIntOrNull() ?: 0 }
                         updateAvailableGenres()
                         loadNextPage()
                     }
@@ -78,7 +79,8 @@ class MovieViewModel @Inject constructor(
             when (result) {
                 is Resource.Success -> {
                     result.data?.movies?.let { movies ->
-                        _allMovies.value = movies
+                        // Sort by year descending
+                        _allMovies.value = movies.filterNotNull().sortedByDescending { it.year?.toIntOrNull() ?: 0 }
                         updateAvailableGenres()
                         loadNextPage()
                     }
@@ -97,7 +99,7 @@ class MovieViewModel @Inject constructor(
         val allMovies = _allMovies.value
         val selectedGenre = _selectedGenre.value
         
-        // Filter movies by selected genre
+        // Filter movies by selected genre (already sorted by year desc)
         val filteredMovies = if (selectedGenre != null) {
             allMovies.filterNotNull().filter { movie ->
                 movie.genres?.contains(selectedGenre) == true
