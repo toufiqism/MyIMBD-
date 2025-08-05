@@ -49,6 +49,10 @@ class MovieViewModel @Inject constructor(
     private val _wishlistCount = MutableStateFlow(0)
     val wishlistCount: StateFlow<Int> = _wishlistCount.asStateFlow()
     
+    // Grid/List view functionality
+    private val _isGridView = MutableStateFlow(false)
+    val isGridView: StateFlow<Boolean> = _isGridView.asStateFlow()
+    
     private val pageSize = 10
 
     init {
@@ -234,5 +238,10 @@ class MovieViewModel @Inject constructor(
         return _allMovies.value.filterNotNull().filter { movie ->
             movie.id != null && _wishlistMovies.value.contains(movie.id)
         }
+    }
+    
+    // Grid/List view functionality
+    fun toggleGridView() {
+        _isGridView.value = !_isGridView.value
     }
 } 

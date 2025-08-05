@@ -18,6 +18,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Movie
@@ -60,6 +64,7 @@ import com.tofiq.myimdb.ui.viewmodel.MovieViewModel
 import com.tofiq.myimdb.util.Resource
 import com.tofiq.myimdb.ui.components.CommonAppBar
 import com.tofiq.myimdb.ui.components.FilterDropdown
+import com.tofiq.myimdb.ui.components.GridMovieCard
 
 @Composable
 fun EmptyState(
@@ -120,6 +125,7 @@ fun HomeScreen(
     val searchQuery by movieViewModel.searchQuery.collectAsState()
     val isSearchActive by movieViewModel.isSearchActive.collectAsState()
     val wishlistCount by movieViewModel.wishlistCount.collectAsState()
+    val isGridView by movieViewModel.isGridView.collectAsState()
 
     var showFilterDropdown by remember { mutableStateOf(false) }
 
@@ -131,6 +137,8 @@ fun HomeScreen(
                 showFilterButton = true,
                 showSearchButton = true,
                 showWishlistButton = true,
+                showGridViewButton = true,
+                isGridView = isGridView,
                 wishlistCount = wishlistCount,
                 isSearchActive = isSearchActive,
                 searchQuery = searchQuery,
@@ -138,6 +146,7 @@ fun HomeScreen(
                 onFilterClick = { showFilterDropdown = true },
                 onSearchClick = { movieViewModel.setSearchActive(true) },
                 onWishlistClick = onWishlistClick,
+                onGridViewToggle = { movieViewModel.toggleGridView() },
                 onSearchQueryChange = { movieViewModel.setSearchQuery(it) },
                 onSearchActiveChange = { movieViewModel.setSearchActive(it) },
                 isLoading = isLoading
@@ -256,6 +265,7 @@ fun HomeScreen(
                                     onLoadMore = { movieViewModel.loadNextPage() },
                                     isLoadingMore = isLoadingMore,
                                     hasMoreMovies = movieViewModel.hasMoreMovies(),
+                                    isGridView = isGridView,
                                     onMovieClick = onMovieClick
                                 )
                             }
@@ -270,6 +280,7 @@ fun HomeScreen(
                                 onLoadMore = { movieViewModel.loadNextPage() },
                                 isLoadingMore = isLoadingMore,
                                 hasMoreMovies = movieViewModel.hasMoreMovies(),
+                                isGridView = isGridView,
                                 onMovieClick = onMovieClick
                             )
                         } else {
@@ -290,8 +301,8 @@ fun HomeScreen(
             }
         }
     }
-    
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MovieCard(
@@ -488,123 +499,250 @@ fun MovieList(
     onLoadMore: () -> Unit,
     isLoadingMore: Boolean,
     hasMoreMovies: Boolean,
+    isGridView: Boolean,
     onMovieClick: (com.tofiq.myimdb.data.model.domain.MovieResponse.Movie) -> Unit
 ) {
-    val listState = rememberLazyListState()
+    if (isGridView) {
+        val gridState = rememberLazyGridState()
 
-    // Detect when user scrolls near the end to load more movies
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.layoutInfo.visibleItemsInfo }
-            .collect { visibleItems ->
-                val lastVisibleItem = visibleItems.lastOrNull()
-                if (lastVisibleItem != null) {
-                    val threshold = movies.size - 3 // Load more when 3 items away from end
-                    if (lastVisibleItem.index >= threshold && hasMoreMovies && !isLoadingMore) {
-                        onLoadMore()
+        // Detect when user scrolls near the end to load more movies
+        LaunchedEffect(gridState) {
+            snapshotFlow { gridState.layoutInfo.visibleItemsInfo }
+                .collect { visibleItems ->
+                    val lastVisibleItem = visibleItems.lastOrNull()
+                    if (lastVisibleItem != null) {
+                        val threshold = movies.size - 3 // Load more when 3 items away from end
+                        if (lastVisibleItem.index >= threshold && hasMoreMovies && !isLoadingMore) {
+                            onLoadMore()
+                        }
+                    }
+                }
+        }
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            state = gridState,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                start = 12.dp,
+                end = 12.dp,
+                top = 8.dp,
+                bottom = 16.dp
+            ),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(
+                items = movies.filterNotNull(),
+                key = { movie -> movie.id ?: movie.hashCode() }
+            ) { movie ->
+                GridMovieCard(
+                    movie = movie,
+                    onMovieClick = onMovieClick
+                )
+            }
+
+            // Loading indicator at the bottom when loading more
+            if (isLoadingMore) {
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    strokeWidth = 2.dp,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "Loading more movies...",
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
                     }
                 }
             }
-    }
 
-    LazyColumn(
-        state = listState,
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(
-            start = 12.dp,
-            end = 12.dp,
-            top = 8.dp,
-            bottom = 16.dp
-        ),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        itemsIndexed(
-            items = movies.filterNotNull(),
-            key = { _, movie -> movie.id ?: movie.hashCode() }
-        ) { _, movie ->
-            MovieCard(
-                movie = movie,
-                onMovieClick = onMovieClick
-            )
-        }
-
-        // Loading indicator at the bottom when loading more
-        if (isLoadingMore) {
-            item {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Box(
+            // End of list indicator
+            if (!hasMoreMovies && movies.isNotEmpty()) {
+                item {
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(24.dp),
-                        contentAlignment = Alignment.Center
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(20.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp),
-                                strokeWidth = 2.dp,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Text(
-                                text = "Loading more movies...",
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = "End of list",
+                                    modifier = Modifier.size(32.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "You've reached the end of the list",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "All movies have been loaded",
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 }
             }
         }
+    } else {
+        val listState = rememberLazyListState()
 
-        // End of list indicator
-        if (!hasMoreMovies && movies.isNotEmpty()) {
-            item {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Box(
+        // Detect when user scrolls near the end to load more movies
+        LaunchedEffect(listState) {
+            snapshotFlow { listState.layoutInfo.visibleItemsInfo }
+                .collect { visibleItems ->
+                    val lastVisibleItem = visibleItems.lastOrNull()
+                    if (lastVisibleItem != null) {
+                        val threshold = movies.size - 3 // Load more when 3 items away from end
+                        if (lastVisibleItem.index >= threshold && hasMoreMovies && !isLoadingMore) {
+                            onLoadMore()
+                        }
+                    }
+                }
+        }
+
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                start = 12.dp,
+                end = 12.dp,
+                top = 8.dp,
+                bottom = 16.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            itemsIndexed(
+                items = movies.filterNotNull(),
+                key = { _, movie -> movie.id ?: movie.hashCode() }
+            ) { _, movie ->
+                MovieCard(
+                    movie = movie,
+                    onMovieClick = onMovieClick
+                )
+            }
+
+            // Loading indicator at the bottom when loading more
+            if (isLoadingMore) {
+                item {
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(20.dp),
-                        contentAlignment = Alignment.Center
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        ),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = "End of list",
-                                modifier = Modifier.size(32.dp),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "You've reached the end of the list",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "All movies have been loaded",
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    strokeWidth = 2.dp,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "Loading more movies...",
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // End of list indicator
+            if (!hasMoreMovies && movies.isNotEmpty()) {
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(20.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = "End of list",
+                                    modifier = Modifier.size(32.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "You've reached the end of the list",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "All movies have been loaded",
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 }

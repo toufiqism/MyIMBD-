@@ -8,6 +8,8 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.ViewList
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,6 +27,8 @@ fun CommonAppBar(
     showFilterButton: Boolean = false,
     showSearchButton: Boolean = false,
     showWishlistButton: Boolean = false,
+    showGridViewButton: Boolean = false,
+    isGridView: Boolean = false,
     wishlistCount: Int = 0,
     isSearchActive: Boolean = false,
     searchQuery: String = "",
@@ -33,6 +37,7 @@ fun CommonAppBar(
     onFilterClick: (() -> Unit)? = null,
     onSearchClick: (() -> Unit)? = null,
     onWishlistClick: (() -> Unit)? = null,
+    onGridViewToggle: (() -> Unit)? = null,
     onSearchQueryChange: ((String) -> Unit)? = null,
     onSearchActiveChange: ((Boolean) -> Unit)? = null,
     isLoading: Boolean = false
@@ -138,6 +143,18 @@ fun CommonAppBar(
                                 )
                             }
                         }
+                    }
+                }
+                // Grid/List view toggle button
+                if (showGridViewButton && onGridViewToggle != null) {
+                    IconButton(
+                        onClick = onGridViewToggle,
+                        enabled = !isLoading
+                    ) {
+                        Icon(
+                            imageVector = if (isGridView) Icons.Default.ViewList else Icons.Default.GridView,
+                            contentDescription = if (isGridView) "Switch to list view" else "Switch to grid view"
+                        )
                     }
                 }
                 // Refresh button

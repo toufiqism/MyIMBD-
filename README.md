@@ -286,6 +286,11 @@ Key dependencies used:
 ## Recent Updates
 
 ### Movie List Screen Enhancement (Latest)
+- **Grid/List View Toggle**: Switch between list and grid view layouts with app bar button
+- **Grid View Layout**: Beautiful 2-column grid layout with compact movie cards
+- **Grid Movie Cards**: Optimized cards showing poster, title, year, and primary genre
+- **View State Persistence**: Remembers user's preferred view mode during app session
+- **Responsive Grid**: Adapts to different screen sizes with proper spacing
 - **Wishlist System**: Complete wishlist functionality with add/remove movies from details screen
 - **Wishlist UI**: App header shows wishlist icon with count badge for wishlisted movies
 - **Wishlist Screen**: Dedicated screen showing all wishlisted movies with beautiful card design
