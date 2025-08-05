@@ -153,17 +153,31 @@ The app implements efficient pagination with the following features:
 - **Scroll Detection**: Uses LazyListState to detect when to load more content
 - **End Detection**: Shows appropriate message when all movies are loaded
 
+### Movie Details Screen
+
+The app features a beautiful, animated details screen with the following characteristics:
+
+- **Hero Section**: Large poster image with gradient overlay for visual impact
+- **Animated Entrance**: Smooth slide-in animation when the screen opens
+- **Staggered Content**: Information animates in sequence for a polished look
+- **Genre Tags**: Beautiful pill-shaped tags with Material Design colors
+- **Comprehensive Information**: Shows all movie details including plot, director, cast, and runtime
+- **Smooth Navigation**: Back button with semi-transparent background
+- **Responsive Design**: Adapts to different screen sizes and orientations
+- **Loading States**: Proper loading indicators for image loading
+- **Error Handling**: Graceful fallback for missing images
+
 ### Performance Optimization
 
 The app is optimized for performance with the following characteristics:
 
-- **Clean Code**: Simplified UI without complex animations for better performance
-- **Efficient Rendering**: Direct rendering without animation overhead
-- **Fast Loading**: Quick display of content without animation delays
-- **Memory Efficient**: Reduced memory usage without animation state management
-- **Smooth Scrolling**: Native scrolling performance without animation interference
+- **Clean Code**: Simplified list UI with optimized details screen animations
+- **Efficient Rendering**: Smart animation timing and easing functions
+- **Fast Loading**: Quick display of content with progressive animation loading
+- **Memory Efficient**: Optimized image loading and state management
+- **Smooth Scrolling**: Native scrolling performance with minimal interference
 - **Responsive UI**: Immediate response to user interactions
-- **Material Design**: Follows Material Design principles with clean aesthetics
+- **Material Design**: Follows Material Design principles with beautiful aesthetics
 
 ### Navigation Flow
 
@@ -173,10 +187,17 @@ The app is optimized for performance with the following characteristics:
    - Navigates to home screen automatically
 
 2. **Home Screen**:
-   - Displays movies in a card-based list
+   - Displays movies in a simplified card-based list
+   - Clickable cards for navigation to details
    - Pull-to-refresh functionality
    - Error handling with retry options
    - Responsive design for different screen sizes
+
+3. **Movie Details Screen**:
+   - Beautiful animated details page
+   - Direct data passing through ViewModel
+   - Smooth navigation transitions
+   - Comprehensive movie information display
 
 ### Error Handling
 
@@ -236,6 +257,12 @@ Key dependencies used:
 ## Recent Updates
 
 ### Movie List Screen Enhancement (Latest)
+- **Simplified List View**: Clean, minimal movie cards showing only essential information (title, year, genre)
+- **Movie Details Screen**: Beautiful, animated details page with full movie information
+- **Navigation**: Smooth navigation between list and details with transition animations
+- **Hero Section**: Large poster image with gradient overlay and animated title
+- **Staggered Animations**: Content animates in sequence for a polished experience
+- **Genre Tags**: Beautiful pill-shaped genre tags with Material Design colors
 - **Pagination Support**: Loads 10 movies initially and loads 10 more when scrolling near the end
 - **Smart Loading**: Automatically detects when user scrolls near the end to load more content
 - **Loading Indicators**: Shows loading indicator at the bottom while fetching more movies
@@ -244,10 +271,9 @@ Key dependencies used:
 - **Placeholder Images**: Shows a movie icon placeholder when poster images are unavailable or fail to load
 - **Loading States**: Displays a loading indicator while images are being fetched
 - **Improved Layout**: Changed from vertical to horizontal card layout for better visual appeal
-- **Enhanced Information Display**: Shows title, year, genre, director, and plot in a compact format
 - **Better Typography**: Improved text hierarchy with proper font sizes and colors
 - **Responsive Design**: Optimized for different screen sizes with proper spacing and text wrapping
-- **Performance Optimized**: Clean, efficient code without complex animations for better performance
+- **Performance Optimized**: Clean, efficient code with optimized animations for better performance
 
 ## Future Enhancements
 

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -98,7 +99,8 @@ fun ErrorState(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    movieViewModel: MovieViewModel
+    movieViewModel: MovieViewModel,
+    onMovieClick: (com.tofiq.myimdb.data.model.domain.MovieResponse.Movie) -> Unit
 ) {
     val movieState by movieViewModel.movieState.collectAsState()
     val isLoading by movieViewModel.isLoading.collectAsState()
@@ -149,7 +151,8 @@ fun HomeScreen(
                                 onRefresh = { movieViewModel.refreshMovies() },
                                 onLoadMore = { movieViewModel.loadNextPage() },
                                 isLoadingMore = isLoadingMore,
-                                hasMoreMovies = movieViewModel.hasMoreMovies()
+                                hasMoreMovies = movieViewModel.hasMoreMovies(),
+                                onMovieClick = onMovieClick
                             )
                         }
                     }
@@ -162,7 +165,8 @@ fun HomeScreen(
                             onRefresh = { movieViewModel.refreshMovies() },
                             onLoadMore = { movieViewModel.loadNextPage() },
                             isLoadingMore = isLoadingMore,
-                            hasMoreMovies = movieViewModel.hasMoreMovies()
+                            hasMoreMovies = movieViewModel.hasMoreMovies(),
+                            onMovieClick = onMovieClick
                         )
                     } else {
                         EmptyState(
@@ -189,7 +193,8 @@ fun MovieList(
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
     isLoadingMore: Boolean,
-    hasMoreMovies: Boolean
+    hasMoreMovies: Boolean,
+    onMovieClick: (com.tofiq.myimdb.data.model.domain.MovieResponse.Movie) -> Unit
 ) {
     val listState = rememberLazyListState()
 
@@ -217,7 +222,10 @@ fun MovieList(
             items = movies.filterNotNull(),
             key = { _, movie -> movie.id ?: movie.hashCode() }
         ) { _, movie ->
-            MovieCard(movie = movie)
+            MovieCard(
+                movie = movie,
+                onMovieClick = onMovieClick
+            )
         }
 
         // Loading indicator at the bottom when loading more
@@ -260,10 +268,13 @@ fun MovieList(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MovieCard(
-    movie: com.tofiq.myimdb.data.model.domain.MovieResponse.Movie
+    movie: com.tofiq.myimdb.data.model.domain.MovieResponse.Movie,
+    onMovieClick: (com.tofiq.myimdb.data.model.domain.MovieResponse.Movie) -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onMovieClick(movie) },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(
@@ -317,48 +328,30 @@ fun MovieCard(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Movie Details
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = movie.title ?: "Unknown Title",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 2
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Year: ${movie.year ?: "Unknown"}",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = "Genre: ${movie.genres?.joinToString(", ") ?: "Unknown"}",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2
-                )
-                if (!movie.director.isNullOrEmpty()) {
+                            // Movie Details (Simplified)
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = movie.title ?: "Unknown Title",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 2
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Year: ${movie.year ?: "Unknown"}",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Director: ${movie.director}",
-                        fontSize = 12.sp,
+                        text = "Genre: ${movie.genres?.joinToString(", ") ?: "Unknown"}",
+                        fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1
                     )
                 }
-                if (!movie.plot.isNullOrEmpty()) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = movie.plot,
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 3
-                    )
-                }
-            }
         }
     }
 }

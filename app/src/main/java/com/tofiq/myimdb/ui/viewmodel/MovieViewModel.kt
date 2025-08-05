@@ -31,6 +31,7 @@ class MovieViewModel @Inject constructor(
     
     private val _allMovies = MutableStateFlow<List<MovieResponse.Movie?>>(emptyList())
     private val _currentPage = MutableStateFlow(0)
+    private val _selectedMovie = MutableStateFlow<MovieResponse.Movie?>(null)
     private val pageSize = 10
 
     init {
@@ -111,5 +112,17 @@ class MovieViewModel @Inject constructor(
         val currentPage = _currentPage.value
         val startIndex = currentPage * pageSize
         return startIndex < allMovies.size
+    }
+    
+    fun getMovieById(movieId: Int): MovieResponse.Movie? {
+        return _allMovies.value.find { it?.id == movieId }
+    }
+    
+    fun setSelectedMovie(movie: MovieResponse.Movie) {
+        _selectedMovie.value = movie
+    }
+    
+    fun getSelectedMovie(): MovieResponse.Movie? {
+        return _selectedMovie.value
     }
 } 

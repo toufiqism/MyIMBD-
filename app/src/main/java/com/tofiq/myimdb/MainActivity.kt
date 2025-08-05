@@ -13,7 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import com.tofiq.myimdb.data.model.domain.MovieResponse
 import com.tofiq.myimdb.ui.screens.HomeScreen
+import com.tofiq.myimdb.ui.screens.MovieDetailsScreen
 import com.tofiq.myimdb.ui.screens.SplashScreen
 import com.tofiq.myimdb.ui.theme.MyIMDBTheme
 import com.tofiq.myimdb.ui.viewmodel.MovieViewModel
@@ -60,7 +64,26 @@ fun MyIMDBApp(movieViewModel: MovieViewModel) {
         }
         
         composable("home") {
-            HomeScreen(movieViewModel = movieViewModel)
+            HomeScreen(
+                movieViewModel = movieViewModel,
+                onMovieClick = { movie ->
+                    // Navigate to details with movie data passed through ViewModel
+                    movieViewModel.setSelectedMovie(movie)
+                    navController.navigate("movie_details")
+                }
+            )
+        }
+        
+        composable("movie_details") {
+            val selectedMovie = movieViewModel.getSelectedMovie()
+            selectedMovie?.let { movie ->
+                MovieDetailsScreen(
+                    movie = movie,
+                    onBackClick = {
+                        navController.popBackStack()
+                    }
+                )
+            }
         }
     }
 }
