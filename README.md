@@ -1,343 +1,377 @@
-# MyIMBD-
-A Simple but well-architected IMDB app using modern Android development tools and principles
+# MyIMDB - Android Movie Application
 
-## Architecture Overview
+A modern Android application built with Jetpack Compose that provides a comprehensive movie browsing experience with advanced features like wishlist management, search, filtering, and offline support.
 
-This project follows Clean Architecture principles with MVVM pattern and uses modern Android development tools:
+## 🎬 Features
 
-### Tech Stack
-- **Language**: Kotlin
+### Core Features
+- **Movie Browsing**: Browse through an extensive collection of movies with detailed information
+- **Movie Details**: View comprehensive movie information including plot, cast, director, runtime, and genres
+- **Wishlist Management**: Add/remove movies to/from your personal wishlist with real-time updates
+- **Search Functionality**: Search movies by title, plot, director, actors, or genres
+- **Genre Filtering**: Filter movies by specific genres with easy-to-use dropdown interface
+- **Grid/List View Toggle**: Switch between grid and list view layouts for different browsing preferences
+- **Offline Support**: Cached data for offline viewing with automatic refresh capabilities
+- **Infinite Scrolling**: Smooth pagination with automatic loading of more movies
+- **Pull-to-Refresh**: Refresh movie data with pull-to-refresh functionality
+
+### UI/UX Features
+- **Material Design 3**: Modern Material Design 3 theming with dynamic color support
+- **Responsive Design**: Optimized for various screen sizes and orientations
+- **Smooth Animations**: Elegant animations and transitions throughout the app
+- **Loading States**: Comprehensive loading indicators and placeholder states
+- **Error Handling**: User-friendly error messages with retry options
+- **Image Loading**: Efficient image loading with Coil library and placeholder support
+- **Edge-to-Edge Design**: Modern edge-to-edge design with system bar integration
+
+## 🏗️ Architecture
+
+### Architecture Pattern
+The application follows **MVVM (Model-View-ViewModel)** architecture pattern with **Clean Architecture** principles:
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   UI Layer      │    │  Domain Layer   │    │   Data Layer    │
+│   (Compose)     │◄──►│  (ViewModel)    │◄──►│  (Repository)   │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+                              │                        │
+                              ▼                        ▼
+                       ┌─────────────────┐    ┌─────────────────┐
+                       │   Use Cases     │    │   Local/Remote  │
+                       │   (Business)    │    │   Data Sources  │
+                       └─────────────────┘    └─────────────────┘
+```
+
+### Technology Stack
 - **UI Framework**: Jetpack Compose
 - **Architecture**: MVVM with Clean Architecture
 - **Dependency Injection**: Hilt
 - **Networking**: Retrofit + OkHttp
-- **Reactive Programming**: Kotlin Coroutines + StateFlow
-- **Database**: Room (implemented with local caching)
-- **Navigation**: Compose Navigation
 - **Image Loading**: Coil
+- **Local Database**: Room
+- **Navigation**: Navigation Compose
+- **State Management**: Kotlin Flow
+- **Build System**: Gradle with Version Catalogs
 
-### Project Structure
+## 📁 Project Structure
 
 ```
 app/src/main/java/com/tofiq/myimdb/
-├── data/
-│   ├── local/
-│   │   ├── dao/
-│   │   │   └── MovieEntityDAO.kt        # Room DAO for database operations
-│   │   ├── entity/
-│   │   │   └── MovieEntity.kt           # Room entity for local storage
-│   │   └── MovieDB.kt                   # Room database configuration
-│   ├── model/
-│   │   └── domain/
-│   │       └── MovieResponse.kt          # Data models
-│   ├── remote/
-│   │   └── MovieApiService.kt            # API service interface
-│   └── repository/
-│       ├── MovieRepository.kt            # Repository interface
-│       └── MovieRepositoryImpl.kt        # Repository implementation
-├── di/
-│   └── NetworkModule.kt                  # Dependency injection modules
-├── ui/
-│   ├── screens/
-│   │   ├── SplashScreen.kt              # Splash screen with loading animation
-│   │   └── HomeScreen.kt                # Home screen displaying movies
-│   ├── viewmodel/
-│   │   └── MovieViewModel.kt             # ViewModel with StateFlow
-│   └── theme/                            # UI theme components
-├── util/
-│   └── Resource.kt                       # Resource wrapper for API responses
-├── MainActivity.kt                       # Main activity with Compose Navigation
-└── MyIMDBApplication.kt                  # Application class for Hilt
+├── data/                           # Data Layer
+│   ├── local/                      # Local Data Sources
+│   │   ├── dao/                    # Data Access Objects
+│   │   │   └── MovieEntityDAO.kt
+│   │   ├── entity/                 # Database Entities
+│   │   │   └── MovieEntity.kt
+│   │   └── MovieDB.kt              # Room Database
+│   ├── model/                      # Data Models
+│   │   └── domain/                 # Domain Models
+│   │       └── MovieResponse.kt
+│   ├── remote/                     # Remote Data Sources
+│   │   └── MovieApiService.kt      # API Service Interface
+│   └── repository/                 # Repository Layer
+│       ├── MovieRepository.kt      # Repository Interface
+│       └── MovieRepositoryImpl.kt  # Repository Implementation
+├── di/                             # Dependency Injection
+│   └── NetworkModule.kt            # Network Module Configuration
+├── ui/                             # UI Layer
+│   ├── components/                 # Reusable UI Components
+│   │   ├── CommonAppBar.kt         # Common App Bar Component
+│   │   ├── FilterDropdown.kt       # Genre Filter Dropdown
+│   │   ├── GridMovieCard.kt        # Grid View Movie Card
+│   │   └── WishlistAnimation.kt    # Wishlist Animation
+│   ├── screens/                    # Screen Components
+│   │   ├── HomeScreen.kt           # Main Movie List Screen
+│   │   ├── MovieDetailsScreen.kt   # Movie Details Screen
+│   │   ├── SplashScreen.kt         # Splash Screen
+│   │   └── WishlistScreen.kt       # Wishlist Screen
+│   ├── theme/                      # UI Theme Configuration
+│   │   ├── Color.kt                # Color Definitions
+│   │   ├── Theme.kt                # Theme Configuration
+│   │   └── Type.kt                 # Typography Definitions
+│   └── viewmodel/                  # ViewModels
+│       └── MovieViewModel.kt       # Main Movie ViewModel
+├── util/                           # Utility Classes
+│   └── Resource.kt                 # Resource Wrapper for API Responses
+├── MainActivity.kt                 # Main Activity
+└── MyIMDBApplication.kt            # Application Class
 ```
 
-## Features
+## 🔄 Data Flow
 
-### Completed Features
+### 1. App Initialization
+```
+SplashScreen → MovieViewModel → MovieRepository → API/Local DB → UI Update
+```
 
-1. **Splash Screen**
-   - Animated loading screen with app branding
-   - Handles initial data loading from API or local database
-   - Automatic navigation to home screen after data loading
-   - Graceful error handling with fallback navigation
+### 2. Movie Loading
+```
+User Action → ViewModel → Repository → API Service → Local Cache → UI Update
+```
 
-2. **Navigation System**
-   - Compose Navigation implementation
-   - Splash screen as start destination
-   - Home screen for movie display
-   - Proper navigation flow with back stack management
+### 3. Search & Filtering
+```
+User Input → ViewModel (Filter Logic) → UI Update with Filtered Results
+```
 
-3. **Local Database Integration**
-   - Room database for caching movie data
-   - Automatic data persistence from API responses
-   - Offline-first approach: loads cached data first, then refreshes from API
-   - Efficient data storage using JSON serialization
+### 4. Wishlist Operations
+```
+User Action → ViewModel → Local State Update → UI Update
+```
 
-4. **API Service Layer**
-   - `MovieApiService`: Retrofit interface for fetching movies from external API
-   - Base URL: `https://raw.githubusercontent.com/erik-sytnyk/movies-list/master/`
-   - Endpoint: `db.json` - Returns movie data in JSON format
+## 🎯 Key Components
 
-5. **Repository Pattern with Caching**
-   - `MovieRepository`: Interface defining data operations
-   - `MovieRepositoryImpl`: Implementation with local database integration
-   - Smart caching: checks local database first, then API
-   - Refresh functionality to clear cache and fetch fresh data
-   - Comprehensive error handling for all scenarios
+### MovieViewModel
+The central ViewModel that manages all movie-related state and business logic:
 
-6. **ViewModel with Enhanced State Management**
-   - `MovieViewModel`: Manages UI state using StateFlow
-   - Separate loading states for initial load and refresh operations
-   - Provides loading, success, and error states
-   - Supports manual refresh functionality
-   - Optimized for both online and offline scenarios
+**State Management:**
+- `movieState`: API response state (Loading/Success/Error)
+- `displayedMovies`: Currently displayed movies with pagination
+- `selectedGenre`: Currently selected genre filter
+- `searchQuery`: Current search query
+- `wishlistMovies`: Set of wishlisted movie IDs
+- `isGridView`: Grid/List view toggle state
 
-7. **Dependency Injection**
-   - Hilt modules for network and database dependencies
-   - Singleton scoped API service, database, and repository
-   - Proper injection into ViewModels and Activities
+**Key Functions:**
+- `loadMovies()`: Initial movie loading
+- `refreshMovies()`: Refresh movie data
+- `loadNextPage()`: Load more movies for pagination
+- `setSelectedGenre()`: Apply genre filter
+- `setSearchQuery()`: Apply search filter
+- `toggleWishlist()`: Add/remove from wishlist
+- `toggleGridView()`: Switch between grid and list views
 
-8. **Resource Wrapper**
-   - `Resource<T>` sealed class for handling API responses
-   - Three states: Loading, Success, and Error
-   - Provides consistent error handling across the app
+### MovieRepository
+Implements the repository pattern for data management:
 
-### Data Models
+**Features:**
+- **Caching Strategy**: First checks local database, then fetches from API
+- **Offline Support**: Returns cached data when offline
+- **Data Persistence**: Stores API responses in Room database
+- **Error Handling**: Comprehensive error handling for network issues
 
+### UI Components
+
+#### CommonAppBar
+A reusable app bar component with dynamic features:
+- Search functionality with real-time input
+- Filter button for genre selection
+- Wishlist button with badge counter
+- Grid/List view toggle
+- Refresh button
+- Back navigation
+
+#### HomeScreen
+The main screen displaying movie listings:
+- **Dual Layout**: Grid and List view support
+- **Infinite Scrolling**: Automatic pagination
+- **Filter Indicators**: Shows active filters with clear options
+- **Loading States**: Comprehensive loading and error states
+- **Empty States**: User-friendly empty state handling
+
+#### MovieDetailsScreen
+Detailed movie information display:
+- **Hero Section**: Large poster with gradient overlay
+- **Animated Content**: Staggered animations for content sections
+- **Wishlist Integration**: Direct wishlist toggle
+- **Comprehensive Info**: Plot, cast, director, runtime, genres
+
+#### WishlistScreen
+Personal wishlist management:
+- **Wishlist Display**: Shows all wishlisted movies
+- **Remove Functionality**: Easy removal from wishlist
+- **Empty State**: Encouraging empty state design
+- **Navigation**: Seamless navigation to movie details
+
+## 🛠️ Dependencies
+
+### Core Dependencies
 ```kotlin
-data class MovieResponse(
-    val genres: List<String?>?,
-    val movies: List<Movie?>?
-) {
-    data class Movie(
-        val actors: String?,
-        val director: String?,
-        val genres: List<String?>?,
-        val id: Int?,
-        val plot: String?,
-        val posterUrl: String?,
-        val runtime: String?,
-        val title: String?,
-        val year: String?
-    )
+// Jetpack Compose
+implementation("androidx.compose.ui:ui")
+implementation("androidx.compose.material3:material3")
+implementation("androidx.compose.ui:ui-tooling-preview")
+
+// Navigation
+implementation("androidx.navigation:navigation-compose:2.9.3")
+
+// Dependency Injection
+implementation("com.google.dagger:hilt-android:2.57")
+kapt("com.google.dagger:hilt-android-compiler:2.57")
+
+// Networking
+implementation("com.squareup.retrofit2:retrofit:3.0.0")
+implementation("com.squareup.retrofit2:converter-gson:3.0.0")
+implementation("com.squareup.okhttp3:okhttp:5.1.0")
+implementation("com.squareup.okhttp3:logging-interceptor:5.1.0")
+
+// Image Loading
+implementation("io.coil-kt:coil-compose:2.7.0")
+
+// Local Database
+implementation("androidx.room:room-runtime:2.7.2")
+kapt("androidx.room:room-compiler:2.7.2")
+```
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Android Studio Hedgehog or later
+- Android SDK 34 or higher
+- Kotlin 2.2.0 or higher
+
+### Installation
+1. Clone the repository
+2. Open the project in Android Studio
+3. Sync Gradle files
+4. Build and run the application
+
+### Build Configuration
+```kotlin
+android {
+    compileSdk = 34
+    defaultConfig {
+        applicationId = "com.tofiq.myimdb"
+        minSdk = 24
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
+    }
 }
 ```
 
-### Local Database Schema
+## 🎨 UI/UX Design
 
-```kotlin
-@Entity(tableName = "movie")
-data class MovieEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val response: String  // JSON string of MovieResponse
-)
+### Design System
+- **Material Design 3**: Modern design language with dynamic colors
+- **Typography**: Consistent typography scale with proper hierarchy
+- **Spacing**: 8dp grid system for consistent spacing
+- **Colors**: Semantic color system with light/dark theme support
+- **Icons**: Material Design icons for consistency
+
+### Responsive Design
+- **Adaptive Layouts**: Optimized for phones and tablets
+- **Orientation Support**: Portrait and landscape orientations
+- **Edge-to-Edge**: Modern edge-to-edge design
+- **System Integration**: Proper system bar handling
+
+## 🔧 Configuration
+
+### Network Configuration
+The app uses a mock API service for demonstration. To integrate with a real API:
+
+1. Update `MovieApiService.kt` with your API endpoints
+2. Configure base URL in `NetworkModule.kt`
+3. Update data models to match your API response structure
+
+### Database Configuration
+Room database is configured for local caching:
+- **Database Name**: `movie_database`
+- **Version**: 1
+- **Entities**: `MovieEntity`
+- **Migrations**: Automatic schema migration support
+
+## 🧪 Testing
+
+### Test Structure
+```
+app/src/test/java/com/tofiq/myimdb/
+├── data/
+│   ├── local/
+│   │   └── dao/
+│   └── repository/
+└── ExampleUnitTest.kt
 ```
 
-### State Management
+### Testing Strategy
+- **Unit Tests**: ViewModel, Repository, and Use Cases
+- **Integration Tests**: Database operations and API calls
+- **UI Tests**: Compose UI component testing
+- **End-to-End Tests**: Complete user workflows
 
-The app uses StateFlow for reactive state management:
+## 📱 Platform Support
 
-- **Loading State**: Shows loading indicator with animated progress
-- **Success State**: Displays movie data in a scrollable list with pagination
-- **Error State**: Shows error message with retry option
-- **Cached Data**: Displays cached data while refreshing in background
-- **Pagination State**: Manages loading more movies with separate loading states
+### Android Versions
+- **Minimum SDK**: API 24 (Android 7.0)
+- **Target SDK**: API 34 (Android 14)
+- **Recommended**: API 26+ for optimal experience
 
-### Pagination Implementation
+### Device Support
+- **Phones**: All screen sizes from 4.5" to 7"
+- **Tablets**: 7" to 12" tablets with adaptive layouts
+- **Foldables**: Support for foldable device configurations
 
-The app implements efficient pagination with the following features:
+## 🔄 State Management
 
-- **Page Size**: 10 movies per page for optimal performance
-- **Smart Loading**: Automatically loads more content when user scrolls near the end
-- **Loading States**: Separate loading indicators for initial load and pagination
-- **Memory Efficient**: Only displays loaded movies, not all movies at once
-- **Scroll Detection**: Uses LazyListState to detect when to load more content
-- **End Detection**: Shows appropriate message when all movies are loaded
+### State Flow Architecture
+The app uses Kotlin Flow for reactive state management:
 
-### Movie Details Screen
+```kotlin
+// State Flow Example
+private val _movieState = MutableStateFlow<Resource<MovieResponse>>(Resource.Loading())
+val movieState: StateFlow<Resource<MovieResponse>> = _movieState.asStateFlow()
+```
 
-The app features a beautiful, animated details screen with the following characteristics:
+### State Updates
+- **Unidirectional Data Flow**: State flows from ViewModel to UI
+- **Immutable State**: State objects are immutable
+- **Predictable Updates**: All state changes go through ViewModel
 
-- **Enhanced Typography**: Beautiful fonts with proper hierarchy and spacing
-- **Hero Section**: Large poster image with gradient overlay for visual impact
-- **Animated Entrance**: Smooth slide-in animation when the screen opens
-- **Staggered Content**: Information animates in sequence for a polished look
-- **Genre Tags**: Beautiful pill-shaped tags with Material Design colors
-- **Comprehensive Information**: Shows all movie details including plot, director, cast, and runtime
-- **Smooth Scrolling**: Full scrollable content for longer texts and comprehensive information
-- **Typography Hierarchy**: Clear section headers with proper font weights and sizes
-- **Improved Readability**: Better line heights and spacing for optimal reading experience
-- **Responsive Design**: Adapts to different screen sizes and orientations
-- **Loading States**: Proper loading indicators for image loading
-- **Error Handling**: Graceful fallback for missing images
+## 🎯 Performance Optimizations
 
-### Genre Filtering System
+### Image Loading
+- **Coil Library**: Efficient image loading and caching
+- **Placeholder Support**: Loading and error placeholders
+- **Crossfade Animations**: Smooth image transitions
+- **Memory Management**: Automatic memory cleanup
 
-The app features a comprehensive genre filtering system:
+### List Performance
+- **Lazy Loading**: Efficient list rendering with Compose LazyColumn/LazyVerticalGrid
+- **Key Optimization**: Proper key usage for list items
+- **Pagination**: Infinite scrolling with automatic loading
+- **RecyclerView Optimization**: Efficient item recycling
 
-- **Dynamic Genre Extraction**: Automatically extracts all unique genres from the movie database
-- **Filter Dropdown**: Beautiful Material Design dialog with all available genres
-- **Active Filter Indicator**: Shows currently selected genre with clear filter option
-- **Filter Persistence**: Maintains selected filter during pagination and refresh operations
-- **Real-time Filtering**: Instantly filters movies based on selected genre
-- **Clear Filter Option**: Easy way to remove filter and show all movies
-- **Responsive Design**: Filter dropdown adapts to different screen sizes
+### Memory Management
+- **ViewModel Scoping**: Proper ViewModel lifecycle management
+- **Coroutine Management**: Structured concurrency with viewModelScope
+- **Resource Cleanup**: Automatic resource cleanup in onCleared()
 
-### Performance Optimization
+## 🔒 Security Considerations
 
-The app is optimized for performance with the following characteristics:
+### Network Security
+- **HTTPS Only**: All network requests use HTTPS
+- **Certificate Pinning**: Optional certificate pinning support
+- **Input Validation**: Proper input sanitization
+- **Error Handling**: Secure error message handling
 
-- **Clean Code**: Simplified list UI with optimized details screen animations
-- **Efficient Rendering**: Smart animation timing and easing functions
-- **Fast Loading**: Quick display of content with progressive animation loading
-- **Memory Efficient**: Optimized image loading and state management
-- **Smooth Scrolling**: Native scrolling performance with minimal interference
-- **Responsive UI**: Immediate response to user interactions
-- **Material Design**: Follows Material Design principles with beautiful aesthetics
+### Data Security
+- **Local Storage**: Secure local database storage
+- **Sensitive Data**: No sensitive data stored locally
+- **Permissions**: Minimal permission requirements
 
-### Common App Bar Component
 
-The app features a unified app bar design across all screens:
+### Development Guidelines
+1. Follow Kotlin coding conventions
+2. Use SOLID principles
+3. Write comprehensive tests
+4. Document code changes
+5. Follow Material Design guidelines
 
-- **Consistent Design**: Same visual style and behavior throughout the app
-- **Flexible Configuration**: Supports back button, refresh button, and custom titles
-- **Loading States**: Disables buttons during loading operations
-- **Material Design**: Follows Material Design 3 guidelines
-- **Responsive**: Adapts to different screen sizes and orientations
-- **Accessibility**: Proper content descriptions for screen readers
+## 📄 License
 
-### Navigation Flow
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-1. **Splash Screen**: 
-   - Shows app branding and loading animation
-   - Common app bar with app title
-   - Loads data from local database or API
-   - Navigates to home screen automatically
+## 👨‍💻 Author
 
-2. **Home Screen**:
-   - Displays movies in a simplified card-based list
-   - Common app bar with refresh functionality
-   - Clickable cards for navigation to details
-   - Pull-to-refresh functionality
-   - Error handling with retry options
-   - Responsive design for different screen sizes
+**Tofiq** - Android Developer
 
-3. **Movie Details Screen**:
-   - Beautiful animated details page
-   - Common app bar with back navigation
-   - Direct data passing through ViewModel
-   - Smooth navigation transitions
-   - Comprehensive movie information display
+## 🙏 Acknowledgments
 
-### Error Handling
+- Material Design team for design guidelines
+- Jetpack Compose team for the amazing UI framework
+- Android community for best practices and libraries
+- Open source contributors for the libraries used in this project
 
-Comprehensive error handling for:
-- HTTP exceptions (4xx, 5xx errors)
-- Network connectivity issues
-- JSON parsing errors
-- Database operations
-- Unexpected exceptions
-- Graceful fallback to cached data
+---
 
-## Setup and Installation
-
-1. Clone the repository
-2. Open in Android Studio
-3. Sync Gradle dependencies
-4. Run the app
-
-## Dependencies
-
-Key dependencies used:
-- `com.google.dagger:hilt-android` - Dependency injection
-- `com.squareup.retrofit2:retrofit` - HTTP client
-- `com.squareup.retrofit2:converter-gson` - JSON parsing
-- `com.squareup.okhttp3:logging-interceptor` - Network logging
-- `androidx.room:room-runtime` - Local database
-- `androidx.room:room-compiler` - Room annotation processor
-- `androidx.navigation:navigation-compose` - Compose navigation
-- `androidx.lifecycle:lifecycle-viewmodel-compose` - ViewModel integration
-- `androidx.lifecycle:lifecycle-runtime-compose` - Compose lifecycle
-
-## User Experience Features
-
-### Splash Screen
-- Beautiful animated loading indicator
-- App branding with "MyIMDB" title
-- Dynamic status messages during loading
-- Automatic navigation after data loading
-
-### Home Screen
-- Material Design 3 components
-- Enhanced card-based movie display with poster images
-- Horizontal layout showing movie poster, title, year, genre, director, and plot
-- Image loading with Coil library for smooth poster display
-- Refresh button in app bar
-- Responsive layout for different screen sizes
-- Pull-to-refresh functionality
-- Error states with retry options
-
-### Performance Optimizations
-- Local database caching for offline support
-- Efficient JSON serialization/deserialization
-- Lazy loading of movie lists
-- Optimized database queries
-- Background data refresh
-
-## Recent Updates
-
-### Movie List Screen Enhancement (Latest)
-- **Grid/List View Toggle**: Switch between list and grid view layouts with app bar button
-- **Grid View Layout**: Beautiful 2-column grid layout with compact movie cards
-- **Grid Movie Cards**: Optimized cards showing poster, title, year, and primary genre
-- **View State Persistence**: Remembers user's preferred view mode during app session
-- **Responsive Grid**: Adapts to different screen sizes with proper spacing
-- **Wishlist System**: Complete wishlist functionality with add/remove movies from details screen
-- **Wishlist UI**: App header shows wishlist icon with count badge for wishlisted movies
-- **Wishlist Screen**: Dedicated screen showing all wishlisted movies with beautiful card design
-- **Wishlist Animation**: Flying heart animation from movie details to app header when adding to wishlist
-- **Wishlist Management**: Toggle wishlist status with visual feedback and state persistence
-- **Wishlist Loading State**: Loading indicator in wishlist button during wishlist operations with simulated network delay
-- **Search Functionality**: Comprehensive search by movie title, plot, director, actors, and genres
-- **Search UI**: Integrated search bar in app bar with smooth transitions and clear functionality
-- **Real-time Search**: Instant search results as you type with optimized performance
-- **Search Indicators**: Clear display of active search queries with easy clear options
-- **Combined Filtering**: Search and genre filters work together seamlessly
-- **Enhanced Movie Cards**: Beautiful, modern card design with improved visual hierarchy
-- **Larger Poster Images**: 100dp poster images with rounded corners and elevation for depth
-- **Genre Tag System**: Beautiful pill-shaped genre tags with color-coded styling
-- **Year Display**: Star icon with year prominently displayed in primary color
-- **Arrow Indicators**: Subtle arrow indicators showing clickable cards
-- **Improved Loading States**: Enhanced loading indicators with gradient backgrounds and better styling
-- **End of List Design**: Beautiful end-of-list indicator with icon and descriptive text
-- **Better Spacing**: Optimized padding and spacing throughout the list for better visual flow
-- **Genre Filtering**: Filter dropdown in app bar with all available genres from the movie database
-- **Filter UI**: Beautiful dialog-based filter dropdown with Material Design styling
-- **Active Filter Indicator**: Shows currently selected genre with clear filter option
-- **Dynamic Genre List**: Automatically extracts and displays all unique genres from loaded movies
-- **Filter Persistence**: Maintains selected filter during pagination and refresh operations
-- **Common App Bar**: Consistent app bar design across all screens with unified navigation
-- **Movie Details Screen**: Beautiful, animated details page with full movie information
-- **Navigation**: Smooth navigation between list and details with transition animations
-- **Hero Section**: Large poster image with gradient overlay and animated title
-- **Staggered Animations**: Content animates in sequence for a polished experience
-- **Pagination Support**: Loads 10 movies initially and loads 10 more when scrolling near the end
-- **Smart Loading**: Automatically detects when user scrolls near the end to load more content
-- **Poster Image Display**: Added movie poster images using Coil library for smooth loading
-- **Placeholder Images**: Shows a movie icon placeholder when poster images are unavailable or fail to load
-- **Responsive Design**: Optimized for different screen sizes with proper spacing and text wrapping
-- **Performance Optimized**: Clean, efficient code with optimized animations for better performance
-- **Custom Splash Screen**: Removed default Android splash screen for seamless app launch experience
-- **Enhanced Splash Screen**: Beautiful animated splash screen with theme integration and multiple animations
-
-## Future Enhancements
-
-Potential improvements for the app:
-- Persistent wishlist storage using Room database
-- Wishlist sharing functionality
-- Advanced wishlist organization (folders, tags)
-- Unit tests for ViewModels and Repository
-- UI tests for Compose screens
-- Dark/Light theme support
-- Movie ratings and reviews
-- Advanced filtering and sorting options
-- Offline wishlist management
+**MyIMDB** - Your personal movie companion built with modern Android development practices.
