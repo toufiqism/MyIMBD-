@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.sp
 import com.tofiq.myimdb.ui.theme.Purple80
 import com.tofiq.myimdb.ui.viewmodel.MovieViewModel
 import com.tofiq.myimdb.util.Resource
+import com.tofiq.myimdb.ui.components.CommonAppBar
 
 @Composable
 fun SplashScreen(
@@ -23,7 +24,7 @@ fun SplashScreen(
 ) {
     val movieState by movieViewModel.movieState.collectAsState()
     val isLoading by movieViewModel.isLoading.collectAsState()
-    
+
     // Animation for the loading indicator
     val infiniteTransition = rememberInfiniteTransition(label = "loading")
     val scale by infiniteTransition.animateFloat(
@@ -35,65 +36,78 @@ fun SplashScreen(
         ),
         label = "scale"
     )
-    
+
     LaunchedEffect(movieState) {
         when (movieState) {
             is Resource.Success -> {
                 // Navigate to home screen after successful data loading
                 onNavigateToHome()
             }
+
             is Resource.Error -> {
                 // Navigate to home screen even on error (user can retry)
                 onNavigateToHome()
             }
+
             is Resource.Loading -> {
                 // Stay on splash screen while loading
             }
         }
     }
-    
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Purple80),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            // App Logo/Title
-            Text(
-                text = "MyIMDB",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                modifier = Modifier.padding(bottom = 16.dp)
+
+    Scaffold(
+        topBar = {
+            CommonAppBar(
+                title = "MyIMDB",
+                showBackButton = false,
+                showRefreshButton = false
             )
-            
-            // Loading indicator
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .size(60.dp)
-                        .scale(scale),
-                    color = Color.White,
-                    strokeWidth = 4.dp
-                )
-                
-                Spacer(modifier = Modifier.height(24.dp))
-                
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(Purple80),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                // App Logo/Title
                 Text(
-                    text = when (movieState) {
-                        is Resource.Loading -> "Loading movies..."
-                        is Resource.Success -> "Movies loaded successfully!"
-                        is Resource.Error -> "Error loading movies"
-                    },
-                    fontSize = 16.sp,
+                    text = "MyIMDB",
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
                     color = Color.White,
-                    modifier = Modifier.padding(top = 16.dp)
+                    modifier = Modifier.padding(bottom = 16.dp)
                 )
+
+                // Loading indicator
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .size(60.dp)
+                            .scale(scale),
+                        color = Color.White,
+                        strokeWidth = 4.dp
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Text(
+                        text = when (movieState) {
+                            is Resource.Loading -> "Loading movies..."
+                            is Resource.Success -> "Movies loaded successfully!"
+                            is Resource.Error -> "Error loading movies"
+                        },
+                        fontSize = 16.sp,
+                        color = Color.White,
+                        modifier = Modifier.padding(top = 16.dp)
+                    )
+                }
             }
         }
     }
-} 
+}

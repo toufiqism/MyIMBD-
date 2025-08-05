@@ -179,15 +179,28 @@ The app is optimized for performance with the following characteristics:
 - **Responsive UI**: Immediate response to user interactions
 - **Material Design**: Follows Material Design principles with beautiful aesthetics
 
+### Common App Bar Component
+
+The app features a unified app bar design across all screens:
+
+- **Consistent Design**: Same visual style and behavior throughout the app
+- **Flexible Configuration**: Supports back button, refresh button, and custom titles
+- **Loading States**: Disables buttons during loading operations
+- **Material Design**: Follows Material Design 3 guidelines
+- **Responsive**: Adapts to different screen sizes and orientations
+- **Accessibility**: Proper content descriptions for screen readers
+
 ### Navigation Flow
 
 1. **Splash Screen**: 
    - Shows app branding and loading animation
+   - Common app bar with app title
    - Loads data from local database or API
    - Navigates to home screen automatically
 
 2. **Home Screen**:
    - Displays movies in a simplified card-based list
+   - Common app bar with refresh functionality
    - Clickable cards for navigation to details
    - Pull-to-refresh functionality
    - Error handling with retry options
@@ -195,6 +208,7 @@ The app is optimized for performance with the following characteristics:
 
 3. **Movie Details Screen**:
    - Beautiful animated details page
+   - Common app bar with back navigation
    - Direct data passing through ViewModel
    - Smooth navigation transitions
    - Comprehensive movie information display
@@ -257,6 +271,7 @@ Key dependencies used:
 ## Recent Updates
 
 ### Movie List Screen Enhancement (Latest)
+- **Common App Bar**: Consistent app bar design across all screens with unified navigation
 - **Simplified List View**: Clean, minimal movie cards showing only essential information (title, year, genre)
 - **Movie Details Screen**: Beautiful, animated details page with full movie information
 - **Navigation**: Smooth navigation between list and details with transition animations

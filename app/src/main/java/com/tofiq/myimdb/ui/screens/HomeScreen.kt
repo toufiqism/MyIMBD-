@@ -52,6 +52,7 @@ import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.tofiq.myimdb.ui.viewmodel.MovieViewModel
 import com.tofiq.myimdb.util.Resource
+import com.tofiq.myimdb.ui.components.CommonAppBar
 
 @Composable
 fun EmptyState(
@@ -109,19 +110,11 @@ fun HomeScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("MyIMDB Movies") },
-                actions = {
-                    IconButton(
-                        onClick = { movieViewModel.refreshMovies() },
-                        enabled = !isLoading
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = "Refresh"
-                        )
-                    }
-                }
+            CommonAppBar(
+                title = "MyIMDB Movies",
+                showRefreshButton = true,
+                onRefreshClick = { movieViewModel.refreshMovies() },
+                isLoading = isLoading
             )
         }
     ) { paddingValues ->
