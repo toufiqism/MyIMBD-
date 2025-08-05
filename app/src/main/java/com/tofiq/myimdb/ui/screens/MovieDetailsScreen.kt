@@ -60,7 +60,8 @@ fun MovieDetailsScreen(
     movie: MovieResponse.Movie,
     onBackClick: () -> Unit,
     onAddToWishlist: (Int) -> Unit,
-    isInWishlist: Boolean
+    isInWishlist: Boolean,
+    isWishlistLoading: Boolean = false
 ) {
     var isVisible by remember { mutableStateOf(false) }
 
@@ -178,7 +179,11 @@ fun MovieDetailsScreen(
 
                         // Wishlist Button at top right
                         androidx.compose.material3.IconButton(
-                            onClick = { movie.id?.let { onAddToWishlist(it) } },
+                            onClick = { 
+                                if (!isWishlistLoading) {
+                                    movie.id?.let { onAddToWishlist(it) }
+                                }
+                            },
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
                                 .padding(16.dp)
@@ -186,14 +191,23 @@ fun MovieDetailsScreen(
                                 .background(
                                     MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
                                     RoundedCornerShape(24.dp)
-                                )
+                                ),
+                            enabled = !isWishlistLoading
                         ) {
-                            Icon(
-                                imageVector = if (isInWishlist) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                contentDescription = if (isInWishlist) "Remove from wishlist" else "Add to wishlist",
-                                modifier = Modifier.size(24.dp),
-                                tint = if (isInWishlist) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                            )
+                            if (isWishlistLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    strokeWidth = 2.dp,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = if (isInWishlist) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                    contentDescription = if (isInWishlist) "Remove from wishlist" else "Add to wishlist",
+                                    modifier = Modifier.size(24.dp),
+                                    tint = if (isInWishlist) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
                         }
 
                         // Movie Title at bottom

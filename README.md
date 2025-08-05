@@ -296,6 +296,7 @@ Key dependencies used:
 - **Wishlist Screen**: Dedicated screen showing all wishlisted movies with beautiful card design
 - **Wishlist Animation**: Flying heart animation from movie details to app header when adding to wishlist
 - **Wishlist Management**: Toggle wishlist status with visual feedback and state persistence
+- **Wishlist Loading State**: Loading indicator in wishlist button during wishlist operations with simulated network delay
 - **Search Functionality**: Comprehensive search by movie title, plot, director, actors, and genres
 - **Search UI**: Integrated search bar in app bar with smooth transitions and clear functionality
 - **Real-time Search**: Instant search results as you type with optimized performance

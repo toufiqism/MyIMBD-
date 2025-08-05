@@ -48,6 +48,8 @@ class MovieViewModel @Inject constructor(
     val wishlistMovies: StateFlow<Set<Int>> = _wishlistMovies.asStateFlow()
     private val _wishlistCount = MutableStateFlow(0)
     val wishlistCount: StateFlow<Int> = _wishlistCount.asStateFlow()
+    private val _isWishlistLoading = MutableStateFlow(false)
+    val isWishlistLoading: StateFlow<Boolean> = _isWishlistLoading.asStateFlow()
     
     // Grid/List view functionality
     private val _isGridView = MutableStateFlow(false)
@@ -109,34 +111,35 @@ class MovieViewModel @Inject constructor(
             _isLoading.value = false
         }
     }
-    
+
     fun loadNextPage() {
         if (_isLoadingMore.value) return
-        
-        val allMovies = _allMovies.value
-        val selectedGenre = _selectedGenre.value
-        val searchQuery = _searchQuery.value
-        
-        // Filter movies by selected genre and search query
-        val filteredMovies = allMovies.filterNotNull().filter { movie ->
-            val matchesGenre = selectedGenre == null || movie.genres?.contains(selectedGenre) == true
-            val matchesSearch = searchQuery.isEmpty() || matchesSearchQuery(movie, searchQuery)
-            matchesGenre && matchesSearch
-        }
-        
-        val currentPage = _currentPage.value
-        val startIndex = currentPage * pageSize
-        
-        if (startIndex >= filteredMovies.size) return // No more movies to load
         
         viewModelScope.launch {
             _isLoadingMore.value = true
             
-            val endIndex = minOf(startIndex + pageSize, filteredMovies.size)
-            val newMovies = filteredMovies.subList(startIndex, endIndex)
+            val allMovies = _allMovies.value
+            val selectedGenre = _selectedGenre.value
+            val searchQuery = _searchQuery.value
             
-            _displayedMovies.value = _displayedMovies.value + newMovies
-            _currentPage.value = currentPage + 1
+            // Filter movies by selected genre and search query
+            val filteredMovies = allMovies.filterNotNull().filter { movie ->
+                val matchesGenre = selectedGenre == null || movie.genres?.contains(selectedGenre) == true
+                val matchesSearch = searchQuery.isEmpty() || matchesSearchQuery(movie, searchQuery)
+                matchesGenre && matchesSearch
+            }
+            
+            val currentPage = _currentPage.value
+            val startIndex = currentPage * pageSize
+            val endIndex = minOf(startIndex + pageSize, filteredMovies.size)
+            
+            if (startIndex < filteredMovies.size) {
+                val newMovies = filteredMovies.subList(startIndex, endIndex)
+                val currentDisplayed = _displayedMovies.value.toMutableList()
+                currentDisplayed.addAll(newMovies)
+                _displayedMovies.value = currentDisplayed
+                _currentPage.value = currentPage + 1
+            }
             
             _isLoadingMore.value = false
         }
@@ -220,14 +223,23 @@ class MovieViewModel @Inject constructor(
     
     // Wishlist functionality
     fun toggleWishlist(movieId: Int) {
-        val currentWishlist = _wishlistMovies.value.toMutableSet()
-        if (currentWishlist.contains(movieId)) {
-            currentWishlist.remove(movieId)
-        } else {
-            currentWishlist.add(movieId)
+        viewModelScope.launch {
+            _isWishlistLoading.value = true
+            
+            // Simulate network delay for wishlist operation
+            kotlinx.coroutines.delay(800)
+            
+            val currentWishlist = _wishlistMovies.value.toMutableSet()
+            if (currentWishlist.contains(movieId)) {
+                currentWishlist.remove(movieId)
+            } else {
+                currentWishlist.add(movieId)
+            }
+            _wishlistMovies.value = currentWishlist
+            _wishlistCount.value = currentWishlist.size
+            
+            _isWishlistLoading.value = false
         }
-        _wishlistMovies.value = currentWishlist
-        _wishlistCount.value = currentWishlist.size
     }
     
     fun isInWishlist(movieId: Int): Boolean {

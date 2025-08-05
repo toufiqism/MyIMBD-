@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -89,7 +90,8 @@ fun MyIMDBApp(movieViewModel: MovieViewModel) {
                     onAddToWishlist = { movieId ->
                         movieViewModel.toggleWishlist(movieId)
                     },
-                    isInWishlist = movieViewModel.isInWishlist(selectedMovie.id ?: 0)
+                    isInWishlist = movieViewModel.isInWishlist(selectedMovie.id ?: 0),
+                    isWishlistLoading = movieViewModel.isWishlistLoading.collectAsState().value
                 )
             }
         }
