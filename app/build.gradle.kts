@@ -66,6 +66,7 @@ dependencies {
     //hilt for dependency injection
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
+    implementation(libs.androidx.hilt.navigation.fragment)
 
     //room for local database
     implementation(libs.androidx.room.runtime)
